@@ -1,0 +1,39 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String       @id @default(uuid()) @db.Uuid
+  email     String       @unique @db.VarChar(255)
+  password  String       @db.VarChar(255)
+  name      String       @db.VarChar(255)
+  position  String?      @db.VarChar(100)
+  phone     String?      @db.VarChar(20)
+  photoUrl  String?      @map("photo_url")
+  role      String       @db.VarChar(20)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @default(now()) @updatedAt @map("updated_at")
+  Attendances Attendance[]
+
+  @@map("users")
+}
+
+model Attendance {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  date      DateTime  @db.Date
+  clockIn   DateTime? @map("clock_in")
+  clockOut  DateTime? @map("clock_out")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("attendances")
+}

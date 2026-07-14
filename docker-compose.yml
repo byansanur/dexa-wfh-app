@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # 1. Database Utama (Operasional & Relasional)
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: dexa_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: dexa_wfh
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # 2. Database Log (Audit Trail Terpisah)
+  mongo-db:
+    image: mongo:6.0
+    container_name: dexa_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+  # 3. Message Queue (Event-Driven)
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: dexa_rabbitmq
+    ports:
+      - "5672:5672"   # Port utama untuk komunikasi NestJS
+      - "15672:15672" # Port UI Management (Bisa diakses via browser)
+
+volumes:
+  pgdata:
+  mongodata:

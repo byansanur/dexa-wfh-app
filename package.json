@@ -1,0 +1,24 @@
+{
+  "name": "dexa-wfh-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dexa WFH Attendance System Modulith",
+  "scripts": {
+    "dev:backend": "pnpm --filter backend run start:dev",
+    "dev:frontend": "pnpm --filter frontend run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "unrs-resolver",
+      "esbuild",
+      "prisma",
+      "@prisma/client",
+      "@prisma/engines",
+      "bcrypt",
+      "@nestjs/core"
+    ]
+  }
+}

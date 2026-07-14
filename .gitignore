@@ -1,2 +1,11 @@
 # Docs
-.docs/
+.agents/**
+.docs/**
+.gemini/**
+.skills/**
+
+# pnpm
+node_modules/
+apps/**/node_modules/
+pnpm-lock.yaml
+package-lock.json
