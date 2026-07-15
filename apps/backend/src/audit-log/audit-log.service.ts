@@ -14,4 +14,14 @@ export class AuditLogService {
       _receivedAt: new Date(),
     });
   }
+
+  async findProfileLogs() {
+    const collection = this.connection.collection('audit_logs');
+    return collection.find({ type: 'PROFILE_UPDATED' }).sort({ _receivedAt: -1 }).limit(100).toArray();
+  }
+
+  async findAttendanceLogs() {
+    const collection = this.connection.collection('audit_logs');
+    return collection.find({ type: 'ATTENDANCE_LOGGED' }).sort({ _receivedAt: -1 }).limit(100).toArray();
+  }
 }
