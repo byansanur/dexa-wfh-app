@@ -9,6 +9,7 @@ import { AttendanceModule } from './attendance/attendance.module';
 import { AuditLogModule } from './audit-log/audit-log.module';
 import { NotificationModule } from './notification/notification.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { PrismaModule } from './prisma/prisma.module';
     AuditLogModule,
     NotificationModule,
     PrismaModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
