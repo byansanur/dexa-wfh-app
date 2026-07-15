@@ -7,6 +7,7 @@ const socket = io('http://localhost:3000');
 function App() {
   const [phone, setPhone] = useState('08123456789');
   const [photoUrl, setPhotoUrl] = useState('http://example.com/photo.jpg');
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   
   // Admin Data
   const [employees, setEmployees] = useState<any[]>([]);
@@ -52,10 +53,17 @@ function App() {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const formData = new FormData();
+      formData.append('phone', phone);
+      if (photoFile) {
+        formData.append('photo', photoFile);
+      } else {
+        formData.append('photoUrl', photoUrl);
+      }
+
       const response = await fetch('http://localhost:3000/employee/profile', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, photoUrl }),
+        body: formData, // fetch will automatically set the correct multipart boundary headers
       });
       if (!response.ok) throw new Error('API Error');
     } catch (error) {
@@ -112,11 +120,11 @@ function App() {
                 />
               </div>
               <div className="form-group">
-                <label>Photo URL (MinIO Pending)</label>
+                <label>Upload New Photo (MinIO)</label>
                 <input 
-                  type="text" 
-                  value={photoUrl} 
-                  onChange={(e) => setPhotoUrl(e.target.value)} 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => setPhotoFile(e.target.files?.[0] || null)} 
                 />
               </div>
               <button className="btn" type="submit">Save Profile</button>
