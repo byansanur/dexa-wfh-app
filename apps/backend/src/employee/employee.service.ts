@@ -2,6 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { NotificationGateway } from '../notification/notification.gateway';
+import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class EmployeeService {
@@ -9,9 +10,16 @@ export class EmployeeService {
     private readonly prisma: PrismaService,
     @Inject('RABBITMQ_SERVICE') private readonly amqpClient: ClientProxy,
     private readonly notificationGateway: NotificationGateway,
+    private readonly storageService: StorageService,
   ) {}
 
-  async updateProfile(userId: string, dto: any) {
+  async updateProfile(userId: string, dto: any, file?: Express.Multer.File) {
+    
+    if (file) {
+      const uploadedUrl = await this.storageService.uploadFile(file);
+      dto.photoUrl = uploadedUrl;
+    }
+
     const updatedUser = await this.prisma.user.upsert({
       where: { id: userId },
       update: dto,
