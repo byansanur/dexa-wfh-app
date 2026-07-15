@@ -36,6 +36,36 @@ In strict compliance with `SKILL.md`, the "Update Profile" vertical slice was im
 - **FileInterceptor**: Modified `EmployeeController` and `EmployeeService` to accept `multipart/form-data` uploads, forward the raw buffer to MinIO, and seamlessly inject the persistent public image URL back into the user's Prisma record.
 - **FormData**: Updated the React frontend to transmit binary image data, bringing the vertical slice to full enterprise-grade maturity.
 
+## 🔐 7. Backend Security & Admin APIs (Phase 7)
+- **JWT & Passport**: Integrated `@nestjs/jwt`, `passport-jwt`, and `bcryptjs` for secure user authentication. Added `JwtStrategy`, `JwtAuthGuard`, and `RolesGuard` for role-based access control (RBAC).
+- **Admin Management**: Scaffolded `AdminController` with endpoints to add employees (single) and perform Bulk Uploads via CSV parsing (`csv-parser`).
+- **Database Seeding**: The `AuthService` now automatically seeds default `ADMIN` and `EMPLOYEE` accounts upon initialization.
+- **Log Exposure**: Added explicit MongoDB read capabilities to `AuditLogController` via Mongoose connection to expose real-time audit trails to the HR portal.
+- **RxJS Hotfix**: Resolved eventual consistency and queue silent failures by forcefully subscribing to `ClientProxy.emit()` for both Profile Updates and Attendance Logs.
+
+## 🚀 8. React SPA & Multi-Screen Routing (Phase 8)
+- **React Router DOM**: Overhauled the monolithic UI into a sophisticated Single Page Application.
+- **Protected Routes**: Implemented client-side routing logic redirecting unauthenticated traffic to `/login` while bifurcating authenticated users to `/employee/*` or `/admin/*`.
+- **Employee Portal**: Dedicated screen featuring one-click attendance logging, interactive profile editing (MinIO image uploads), and personal attendance history.
+- **HR Command Center**: Real-time websocket-powered dashboard featuring instantaneous employee tracking, single/bulk addition forms, and a live MongoDB Audit Trail view. Eventual consistency race conditions were mitigated via a 500ms staggered UI fetch.
+
+## 🛠️ Infrastructure Monitoring & Access
+
+Anda dapat mengakses panel kendali infrastruktur secara langsung melalui peramban (*browser*) maupun *Database Client* pilihan Anda (seperti DBeaver atau TablePlus):
+
+- **RabbitMQ Management UI**: [http://localhost:15672](http://localhost:15672)
+  - **Username**: `guest`
+  - **Password**: `guest`
+- **MinIO Object Storage Console**: [http://localhost:9001](http://localhost:9001)
+  - **Username**: `minioadmin`
+  - **Password**: `minioadmin`
+- **PostgreSQL Database**:
+  - **Host**: `localhost:5432`
+  - **User**: `admin`
+  - **Password**: `secretpassword`
+  - **Database**: `dexa_wfh`
+- **MongoDB**: Terbuka di `localhost:27017` tanpa *auth* (khusus *development* lokal).
+
 ---
 
 > [!TIP]
