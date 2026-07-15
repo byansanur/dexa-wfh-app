@@ -6,8 +6,8 @@ const socket = io('http://localhost:3000');
 
 export default function Admin() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [token] = useState(() => localStorage.getItem('token'));
+  const [user] = useState(() => JSON.parse(localStorage.getItem('user') || '{}'));
   
   const [employees, setEmployees] = useState<any[]>([]);
   const [auditProfile, setAuditProfile] = useState<any[]>([]);

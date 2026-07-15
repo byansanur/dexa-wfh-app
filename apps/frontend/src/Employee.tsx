@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Employee() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [token] = useState(() => localStorage.getItem('token'));
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user') || '{}'));
   
   const [phone, setPhone] = useState(user.phone || '');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -45,6 +45,7 @@ export default function Employee() {
       if (res.ok) {
         const updatedUser = await res.json();
         localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
         setPhone(updatedUser.phone || '');
         alert('Profil Berhasil Diperbarui!');
       } else {
