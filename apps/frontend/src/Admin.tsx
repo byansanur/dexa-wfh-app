@@ -17,6 +17,8 @@ export default function Admin() {
   const [email, setEmail] = useState('');
   const [attendanceType, setAttendanceType] = useState('SINGLE');
   const [csvFile, setCsvFile] = useState<File | null>(null);
+  
+  const [selectedLog, setSelectedLog] = useState<any>(null);
 
   useEffect(() => {
     if (!token || user.role !== 'ADMIN') {
@@ -166,10 +168,31 @@ export default function Admin() {
           <h2>MongoDB Audit Logs: Profile Updates</h2>
           <div className="table-container" style={{ maxHeight: '300px', overflowY: 'auto' }}>
             <table>
-              <thead><tr><th>Waktu</th><th>User ID</th><th>Perubahan HP</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Waktu</th>
+                  <th>User ID</th>
+                  <th>Detail Perubahan</th>
+                </tr>
+              </thead>
               <tbody>
                 {auditProfile.map(log => (
-                  <tr key={log._id}><td>{new Date(log._receivedAt).toLocaleString()}</td><td>{log.userId}</td><td>{log.changes?.phone || '-'}</td></tr>
+                  <tr key={log._id}>
+                    <td>{new Date(log._receivedAt).toLocaleString()}</td>
+                    <td>
+                      <strong>{employees.find(e => e.id === log.userId)?.name || 'Unknown User'}</strong><br/>
+                      <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{log.userId.split('-')[0]}...</span>
+                    </td>
+                    <td>
+                      <button 
+                        className="btn btn-primary" 
+                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
+                        onClick={() => setSelectedLog(log)}
+                      >
+                        Lihat Detail
+                      </button>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
@@ -183,13 +206,70 @@ export default function Admin() {
               <thead><tr><th>Waktu</th><th>User ID</th><th>Aksi</th></tr></thead>
               <tbody>
                 {auditAttendance.map(log => (
-                  <tr key={log._id}><td>{new Date(log._receivedAt).toLocaleString()}</td><td>{log.userId}</td><td>{log.action}</td></tr>
+                  <tr key={log._id}>
+                    <td>{new Date(log._receivedAt).toLocaleString()}</td>
+                    <td>
+                      <strong>{employees.find(e => e.id === log.userId)?.name || 'Unknown User'}</strong><br/>
+                      <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{log.userId.split('-')[0]}...</span>
+                    </td>
+                    <td>{log.action}</td>
+                  </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
       </div>
+
+      {/* Modal Popup Detail Perubahan */}
+      {selectedLog && (
+        <div className="modal-overlay" onClick={() => setSelectedLog(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setSelectedLog(null)}>&times;</button>
+            <h2 style={{ marginTop: 0, color: 'var(--primary)', marginBottom: '1.5rem' }}>Detail Perubahan Profil</h2>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '1.1rem' }}>
+              <div>
+                <strong>Nama Karyawan:</strong><br />
+                {employees.find(e => e.id === selectedLog.userId)?.name || 'Unknown User'}
+                <br />
+                <code style={{ backgroundColor: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', marginTop: '0.25rem', display: 'inline-block' }}>{selectedLog.userId}</code>
+              </div>
+              
+              <div>
+                <strong>Perubahan Nomor HP:</strong><br />
+                {selectedLog.changes?.phone ? (
+                  <span>📱 {selectedLog.changes.phone}</span>
+                ) : (
+                  <span style={{ color: '#94a3b8' }}>Tidak ada perubahan</span>
+                )}
+              </div>
+
+              <div>
+                <strong>Perubahan Foto Profil:</strong><br />
+                {selectedLog.changes?.photoUrl ? (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <img 
+                      src={selectedLog.changes.photoUrl} 
+                      alt="New Avatar" 
+                      style={{ width: '100px', height: '100px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #cbd5e1' }} 
+                    />
+                    <br />
+                    <a href={selectedLog.changes.photoUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.9rem', color: 'var(--primary)' }}>
+                      Buka Tautan Asli (MinIO)
+                    </a>
+                  </div>
+                ) : (
+                  <span style={{ color: '#94a3b8' }}>Tidak ada perubahan</span>
+                )}
+              </div>
+            </div>
+            
+            <button className="btn btn-primary" style={{ marginTop: '2rem' }} onClick={() => setSelectedLog(null)}>Tutup</button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
