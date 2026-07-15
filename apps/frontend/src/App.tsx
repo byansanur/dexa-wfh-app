@@ -1,122 +1,190 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
+import './index.css';
+
+const socket = io('http://localhost:3000');
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [phone, setPhone] = useState('08123456789');
+  const [photoUrl, setPhotoUrl] = useState('http://example.com/photo.jpg');
+  
+  // Admin Data
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const fetchEmployees = async () => {
+    try {
+      const res = await fetch('http://localhost:3000/admin/employees');
+      const data = await res.json();
+      setEmployees(data);
+    } catch (e) {
+      console.error("Failed to fetch employees", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployees();
+
+    socket.on('connect', () => console.log('WebSocket Connected'));
+
+    socket.on('ProfileUpdated', (user) => {
+      showToast(`User ${user.name || user.id} updated their profile!`);
+      fetchEmployees(); // Refresh data
+    });
+
+    socket.on('AttendanceLogged', (attendance) => {
+      showToast(`User ${attendance.user?.name || attendance.userId} just clocked ${attendance.clockOut ? 'out' : 'in'}.`);
+      fetchEmployees(); // Refresh data
+    });
+
+    return () => {
+      socket.off('connect');
+      socket.off('ProfileUpdated');
+      socket.off('AttendanceLogged');
+    };
+  }, []);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3000/employee/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, photoUrl }),
+      });
+      if (!response.ok) throw new Error('API Error');
+    } catch (error) {
+      alert('Gagal update profile.');
+    }
+  };
+
+  const handleClockIn = async () => {
+    try {
+      await fetch('http://localhost:3000/attendance/clock-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+    } catch (error) {
+      alert('Gagal Clock In');
+    }
+  };
+
+  const handleClockOut = async () => {
+    try {
+      await fetch('http://localhost:3000/attendance/clock-out', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+    } catch (error) {
+      alert('Gagal Clock Out');
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="container">
+      <h1 style={{ color: 'var(--primary)', marginBottom: '2rem' }}>Dexa WFH Portal</h1>
+      <div className="dashboard-grid">
+        
+        {/* Kolom Karyawan */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div className="card">
+            <h2>🧑‍💻 Employee: Actions</h2>
+            <div className="btn-group" style={{ marginTop: 0, marginBottom: '1.5rem' }}>
+              <button className="btn btn-success" onClick={handleClockIn}>Clock In</button>
+              <button className="btn btn-danger" onClick={handleClockOut}>Clock Out</button>
+            </div>
+            
+            <h3 style={{ fontSize: '1rem', marginTop: '1.5rem', marginBottom: '1rem', color: '#64748b' }}>Update Profile</h3>
+            <form onSubmit={handleUpdateProfile}>
+              <div className="form-group">
+                <label>Phone Number</label>
+                <input 
+                  type="text" 
+                  value={phone} 
+                  onChange={(e) => setPhone(e.target.value)} 
+                />
+              </div>
+              <div className="form-group">
+                <label>Photo URL (MinIO Pending)</label>
+                <input 
+                  type="text" 
+                  value={photoUrl} 
+                  onChange={(e) => setPhotoUrl(e.target.value)} 
+                />
+              </div>
+              <button className="btn" type="submit">Save Profile</button>
+            </form>
+          </div>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        {/* Kolom HR/Admin */}
+        <div className="card">
+          <h2>👑 HR Admin: Live Dashboard</h2>
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Employee Name</th>
+                  <th>Phone</th>
+                  <th>Status (Today)</th>
+                  <th>Clock In</th>
+                  <th>Clock Out</th>
+                </tr>
+              </thead>
+              <tbody>
+                {employees.length === 0 && (
+                  <tr>
+                    <td colSpan={5} style={{ textAlign: 'center', color: '#94a3b8' }}>No data available</td>
+                  </tr>
+                )}
+                {employees.map((emp) => {
+                  const todayAtt = emp.Attendances?.[0];
+                  const hasClockedIn = !!todayAtt?.clockIn;
+                  
+                  return (
+                    <tr key={emp.id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <img 
+                            src={emp.photoUrl || 'https://ui-avatars.com/api/?name=' + emp.name} 
+                            style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} 
+                            alt="" 
+                          />
+                          <span style={{ fontWeight: 500 }}>{emp.name}</span>
+                        </div>
+                      </td>
+                      <td>{emp.phone || '-'}</td>
+                      <td>
+                        <span className={`status-badge ${hasClockedIn ? 'status-present' : 'status-absent'}`}>
+                          {hasClockedIn ? 'Present' : 'Absent'}
+                        </span>
+                      </td>
+                      <td>{todayAtt?.clockIn ? new Date(todayAtt.clockIn).toLocaleTimeString() : '-'}</td>
+                      <td>{todayAtt?.clockOut ? new Date(todayAtt.clockOut).toLocaleTimeString() : '-'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      </div>
+
+      {toast && (
+        <div className="notification-toast">
+          🔔 {toast}
+        </div>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
