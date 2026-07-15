@@ -1,20 +1,31 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Get, UseGuards, Req } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('attendance')
+@UseGuards(JwtAuthGuard)
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) {}
+  constructor(
+    private readonly attendanceService: AttendanceService,
+    private readonly prisma: PrismaService
+  ) {}
 
   @Post('clock-in')
-  async clockIn(@Body('userId') userId: string) {
-    // For MVP, if no userId is provided, we simulate a default user ID
-    const actualUserId = userId || '123e4567-e89b-12d3-a456-426614174000';
-    return this.attendanceService.clockIn(actualUserId);
+  async clockIn(@Req() req: any) {
+    return this.attendanceService.clockIn(req.user.userId);
   }
 
   @Post('clock-out')
-  async clockOut(@Body('userId') userId: string) {
-    const actualUserId = userId || '123e4567-e89b-12d3-a456-426614174000';
-    return this.attendanceService.clockOut(actualUserId);
+  async clockOut(@Req() req: any) {
+    return this.attendanceService.clockOut(req.user.userId);
+  }
+
+  @Get('history')
+  async getHistory(@Req() req: any) {
+    return this.prisma.attendance.findMany({
+      where: { userId: req.user.userId },
+      orderBy: { date: 'desc' },
+    });
   }
 }

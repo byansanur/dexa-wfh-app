@@ -42,6 +42,8 @@ export class AttendanceService {
       userId,
       timestamp: new Date(),
       data: attendance,
+    }).subscribe({
+      error: (err) => console.error('RabbitMQ Emit Error:', err)
     });
 
     return attendance;
@@ -75,6 +77,8 @@ export class AttendanceService {
       userId,
       timestamp: new Date(),
       data: attendance,
+    }).subscribe({
+      error: (err) => console.error('RabbitMQ Emit Error:', err)
     });
 
     return attendance;

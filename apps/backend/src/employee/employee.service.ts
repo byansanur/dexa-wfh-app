@@ -41,6 +41,8 @@ export class EmployeeService {
       action: 'UPDATE_PROFILE',
       changes: dto,
       timestamp: new Date().toISOString(),
+    }).subscribe({
+      error: (err) => console.error('RabbitMQ Emit Error:', err)
     });
 
     return updatedUser;
