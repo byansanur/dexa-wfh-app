@@ -13,8 +13,9 @@ export default function Admin() {
   const [auditProfile, setAuditProfile] = useState<any[]>([]);
   const [auditAttendance, setAuditAttendance] = useState<any[]>([]);
   
-  const [newEmpEmail, setNewEmpEmail] = useState('');
-  const [newEmpName, setNewEmpName] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [attendanceType, setAttendanceType] = useState('SINGLE');
   const [csvFile, setCsvFile] = useState<File | null>(null);
 
   useEffect(() => {
@@ -61,9 +62,10 @@ export default function Admin() {
     await fetch('http://localhost:3000/admin/employee', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: newEmpEmail, name: newEmpName })
+      body: JSON.stringify({ email, name, attendanceType })
     });
-    alert('Karyawan Ditambahkan!');
+    alert('Karyawan Berhasil Ditambahkan!');
+    setName(''); setEmail(''); setAttendanceType('SINGLE');
     fetchEmployees();
   };
 
@@ -92,12 +94,26 @@ export default function Admin() {
         <div className="card">
           <h2>Tambah Karyawan (Single)</h2>
           <form onSubmit={handleAddEmployee}>
-            <div className="form-group"><label>Email</label><input type="email" value={newEmpEmail} onChange={e => setNewEmpEmail(e.target.value)} required /></div>
-            <div className="form-group"><label>Nama</label><input type="text" value={newEmpName} onChange={e => setNewEmpName(e.target.value)} required /></div>
-            <button className="btn" type="submit">Tambah Karyawan</button>
+            <div className="form-group">
+                <label>Email</label>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label>Nama</label>
+                <input type="text" value={name} onChange={e => setName(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label>Tipe Absensi</label>
+                <select value={attendanceType} onChange={e => setAttendanceType(e.target.value)}>
+                  <option value="SINGLE">Single-Shift (1x per Hari)</option>
+                  <option value="MULTI">Multi-Shift (Lebih dari 1x)</option>
+                </select>
+              </div>
+              <button type="submit" className="btn btn-primary">Simpan Karyawan</button>
           </form>
 
           <h2 style={{ marginTop: '2rem' }}>Bulk Upload (CSV)</h2>
+          <p className="helper-text">Format CSV: <code>email,name,attendanceType</code> (opsional SINGLE/MULTI)</p>
           <form onSubmit={handleBulkUpload}>
             <div className="form-group"><label>File CSV</label><input type="file" accept=".csv" onChange={e => setCsvFile(e.target.files?.[0] || null)} required /></div>
             <button className="btn btn-success" type="submit">Import CSV</button>
@@ -108,19 +124,35 @@ export default function Admin() {
           <h2>Daftar Karyawan (Live Status)</h2>
           <div className="table-container">
             <table>
-              <thead><tr><th>Nama</th><th>Email</th><th>Phone</th><th>Status Hari Ini</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Foto</th>
+                  <th>Nama</th>
+                  <th>Email</th>
+                  <th>No. HP</th>
+                  <th>Tipe Absen</th>
+                  <th>Jam Masuk (Sesi Terakhir)</th>
+                  <th>Jam Keluar (Sesi Terakhir)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
               <tbody>
                 {employees.map(emp => (
                   <tr key={emp.id}>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <img src={emp.photoUrl || 'https://ui-avatars.com/api/?name=' + emp.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} alt="" />
-                        <span style={{ fontWeight: 500 }}>{emp.name}</span>
-                      </div>
+                      <img src={emp.photoUrl || 'https://ui-avatars.com/api/?name=' + emp.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} alt="" />
                     </td>
+                    <td><span style={{ fontWeight: 500 }}>{emp.name}</span></td>
                     <td>{emp.email}</td>
                     <td>{emp.phone || '-'}</td>
-                    <td><span className={`status-badge ${emp.Attendances?.[0]?.clockIn ? 'status-present' : 'status-absent'}`}>{emp.Attendances?.[0]?.clockIn ? 'Present' : 'Absent'}</span></td>
+                    <td>{emp.attendanceType === 'MULTI' ? 'Multi-Shift' : 'Single-Shift'}</td>
+                    <td>{emp.clockIn ? new Date(emp.clockIn).toLocaleTimeString() : '-'}</td>
+                    <td>{emp.clockOut ? new Date(emp.clockOut).toLocaleTimeString() : '-'}</td>
+                    <td>
+                      <span className={`status-badge ${!emp.clockIn ? 'status-absent' : emp.clockOut ? 'status-completed' : 'status-present'}`}>
+                        {!emp.clockIn ? 'Absent' : emp.clockOut ? 'Completed' : 'Present'}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>

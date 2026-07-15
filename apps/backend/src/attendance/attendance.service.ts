@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { NotificationGateway } from '../notification/notification.gateway';
@@ -14,22 +14,41 @@ export class AttendanceService {
   async clockIn(userId: string) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const attendance = await this.prisma.attendance.upsert({
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    // Cek apakah ada sesi absensi aktif yang belum clockOut
+    const activeSession = await this.prisma.attendance.findFirst({
       where: {
-        userId_date: {
-          userId,
-          date: today,
-        },
-      },
-      update: {}, // Don't override existing clockIn if pressed again
-      create: {
+        userId,
+        date: today,
+        clockOut: null,
+      }
+    });
+
+    if (activeSession) {
+      throw new BadRequestException('Anda memiliki sesi absen yang masih berjalan. Silakan Clock Out terlebih dahulu.');
+    }
+
+    if (user?.attendanceType === 'SINGLE') {
+      const existingToday = await this.prisma.attendance.findFirst({
+        where: { userId, date: today }
+      });
+      if (existingToday) {
+        throw new BadRequestException('Anda hanya diizinkan melakukan absensi 1 kali dalam sehari (Single Shift).');
+      }
+    }
+
+    const attendance = await this.prisma.attendance.create({
+      data: {
         userId,
         date: today,
         clockIn: new Date(),
       },
       include: {
-        user: true, // Include user data for the websocket notification
+        user: true,
       }
     });
 
@@ -53,13 +72,22 @@ export class AttendanceService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const attendance = await this.prisma.attendance.update({
+    // Cari sesi absensi aktif (belum clock out)
+    const activeSession = await this.prisma.attendance.findFirst({
       where: {
-        userId_date: {
-          userId,
-          date: today,
-        },
+        userId,
+        date: today,
+        clockOut: null,
       },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!activeSession) {
+      throw new BadRequestException('Anda belum melakukan Clock In atau sudah melakukan Clock Out sebelumnya.');
+    }
+
+    const attendance = await this.prisma.attendance.update({
+      where: { id: activeSession.id },
       data: {
         clockOut: new Date(),
       },

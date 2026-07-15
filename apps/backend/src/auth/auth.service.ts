@@ -33,6 +33,7 @@ export class AuthService implements OnModuleInit {
           password: await bcrypt.hash('employee123', 10),
           name: 'Budi (Karyawan)',
           role: 'EMPLOYEE',
+          attendanceType: 'MULTI', // Seed as Multi-Shift for testing
         }
       });
     }
@@ -58,6 +59,7 @@ export class AuthService implements OnModuleInit {
         name: user.name,
         role: user.role,
         photoUrl: user.photoUrl,
+        attendanceType: user.attendanceType,
       }
     };
   }

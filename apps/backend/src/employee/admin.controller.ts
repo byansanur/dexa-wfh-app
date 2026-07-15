@@ -19,25 +19,34 @@ export class AdminController {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const users = await this.prisma.user.findMany({
+    const employees = await this.prisma.user.findMany({
+      where: { role: 'EMPLOYEE' },
       include: {
         Attendances: {
-          where: {
-            date: today,
-          },
+          where: { date: today },
+          orderBy: { createdAt: 'desc' }, // Order by latest to pick the most recent session
         },
-      },
-      orderBy: {
-        name: 'asc',
       },
     });
 
-    return users;
+    return employees.map((emp) => {
+      const latestAttendance = emp.Attendances[0]; // Gets the latest session
+      return {
+        id: emp.id,
+        name: emp.name,
+        email: emp.email,
+        phone: emp.phone,
+        photoUrl: emp.photoUrl,
+        attendanceType: emp.attendanceType,
+        clockIn: latestAttendance?.clockIn || null,
+        clockOut: latestAttendance?.clockOut || null,
+      };
+    });
   }
 
   @Post('employee')
   async createEmployee(@Body() body: any) {
-    const hashedPassword = await bcrypt.hash(body.password || 'default123', 10);
+    const hashedPassword = await bcrypt.hash(body.password || 'wfh123', 10);
     return this.prisma.user.create({
       data: {
         email: body.email,
@@ -45,6 +54,7 @@ export class AdminController {
         name: body.name,
         role: body.role || 'EMPLOYEE',
         phone: body.phone,
+        attendanceType: body.attendanceType,
       }
     });
   }
@@ -74,20 +84,20 @@ export class AdminController {
         .on('data', (data: any) => results.push(data))
         .on('end', async () => {
           try {
-            const defaultPassword = await bcrypt.hash('dexa123', 10);
-            const usersData = results.map(row => ({
+            const defaultPassword = await bcrypt.hash('wfh123', 10);
+            const data = results.map((row) => ({
               email: row.email,
-              password: defaultPassword,
               name: row.name,
-              role: row.role || 'EMPLOYEE',
-              phone: row.phone,
+              password: defaultPassword,
+              role: 'EMPLOYEE',
+              attendanceType: row.attendanceType || 'SINGLE',
             }));
 
             await this.prisma.user.createMany({
-              data: usersData,
+              data,
               skipDuplicates: true,
             });
-            resolve({ message: `Successfully imported ${usersData.length} employees` });
+            resolve({ message: `Successfully imported ${data.length} employees` });
           } catch (e) {
             reject(e);
           }

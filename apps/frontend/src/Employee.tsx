@@ -56,17 +56,21 @@ export default function Employee() {
     }
   };
 
-  const clock = async (type: 'clock-in' | 'clock-out') => {
+  const handleAttendance = async (type: 'clock-in' | 'clock-out') => {
     try {
-      await fetch(`http://localhost:3000/attendance/${type}`, {
+      const res = await fetch(`http://localhost:3000/attendance/${type}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       });
-      alert(`Berhasil ${type === 'clock-in' ? 'Masuk' : 'Keluar'}!`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Gagal menyimpan absensi');
+      }
+      alert(`Berhasil ${type === 'clock-in' ? 'Clock In' : 'Clock Out'}`);
       fetchHistory();
-    } catch (error) {
-      alert(`Gagal ${type}`);
+    } catch (error: any) {
+      alert(`Gagal melakukan ${type}: ${error.message}`);
     }
   };
 
@@ -81,8 +85,8 @@ export default function Employee() {
         <div className="card">
           <h2>Absensi Harian</h2>
           <div className="btn-group">
-            <button className="btn btn-success" onClick={() => clock('clock-in')}>Clock In</button>
-            <button className="btn btn-danger" onClick={() => clock('clock-out')}>Clock Out</button>
+            <button className="btn btn-success" onClick={() => handleAttendance('clock-in')}>Clock In</button>
+            <button className="btn btn-danger" onClick={() => handleAttendance('clock-out')}>Clock Out</button>
           </div>
           
           <h2 style={{ marginTop: '2rem' }}>Update Profil</h2>

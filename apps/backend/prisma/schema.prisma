@@ -15,8 +15,9 @@ model User {
   position  String?      @db.VarChar(100)
   phone     String?      @db.VarChar(20)
   photoUrl  String?      @map("photo_url")
-  role      String       @db.VarChar(20)
-  createdAt DateTime     @default(now()) @map("created_at")
+  role           String       @db.VarChar(20)
+  attendanceType String       @default("SINGLE") @db.VarChar(10)
+  createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @default(now()) @updatedAt @map("updated_at")
   Attendances Attendance[]
 
@@ -34,6 +35,5 @@ model Attendance {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, date])
   @@map("attendances")
 }

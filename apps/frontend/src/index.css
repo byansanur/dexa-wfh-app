@@ -54,13 +54,14 @@ body {
   color: #475569;
 }
 
-.form-group input {
+.form-group input, .form-group select {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   box-sizing: border-box;
   font-family: inherit;
+  background-color: white;
 }
 
 .btn {
@@ -137,8 +138,13 @@ td {
 }
 
 .status-absent {
-  background-color: #fee2e2;
+  background: #fee2e2;
   color: #991b1b;
+}
+
+.status-completed {
+  background: #e0e7ff;
+  color: #3730a3;
 }
 
 .notification-toast {

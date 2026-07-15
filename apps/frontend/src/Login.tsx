@@ -38,12 +38,15 @@ export default function Login() {
             <label>Email</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
           </div>
-          <div className="form-group">
+          <div className="input-group">
             <label>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
-          <button className="btn" type="submit">Login</button>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>Sign In</button>
         </form>
+        <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666', textAlign: 'center' }}>
+          <em>Default password untuk user baru: <strong>wfh123</strong></em>
+        </p>
         <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#64748b' }}>
           *Admin: admin@dexa.com / admin123<br/>
           *Karyawan: employee@dexa.com / employee123
