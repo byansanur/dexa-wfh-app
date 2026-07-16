@@ -1,8 +1,3 @@
-# Docs
-.agents/**
-.docs/**
-.gemini/**
-.skills/**
 
 # pnpm
 node_modules/
