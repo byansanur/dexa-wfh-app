@@ -3,6 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { NotificationGateway } from '../notification/notification.gateway';
 import { StorageService } from '../storage/storage.service';
+import * as bcrypt from 'bcryptjs';
+import { UnauthorizedException } from '@nestjs/common';
 
 @Injectable()
 export class EmployeeService {
@@ -53,9 +55,29 @@ export class EmployeeService {
       where: { id: userId },
     });
     if (user) {
-      delete user.password;
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
     }
-    return user;
+    return null;
+  }
+
+  async changePassword(userId: string, currentPassword?: string, newPassword?: string) {
+    if (!currentPassword || !newPassword) {
+      throw new UnauthorizedException('Password is required');
+    }
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('User not found');
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Kata sandi saat ini tidak valid');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
   }
 
   async getAttendanceHistory(userId: string, startDate?: string, endDate?: string) {

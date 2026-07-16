@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from './components/ui/Card';
 import { Button } from './components/ui/Button';
 import { Input } from './components/ui/Input';
+import { Chip } from './components/ui/Chip';
 
 export default function Employee() {
   const navigate = useNavigate();
@@ -13,6 +14,12 @@ export default function Employee() {
   const [phone, setPhone] = useState(user.phone || '');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [history, setHistory] = useState<any[]>([]);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const getFirstDayOfMonth = () => {
     const now = new Date();
@@ -33,6 +40,8 @@ export default function Employee() {
     }
     fetchProfile();
     fetchHistory();
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   const fetchProfile = async () => {
@@ -67,6 +76,31 @@ export default function Employee() {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Password Validation if user intends to change password
+      if (currentPassword || newPassword || confirmPassword) {
+        if (!currentPassword || !newPassword || !confirmPassword) {
+          alert('Mohon isi semua kolom kata sandi untuk mengubah kata sandi.');
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          alert('Kata sandi baru dan konfirmasi kata sandi tidak cocok!');
+          return;
+        }
+        
+        // Update password first
+        const passRes = await apiFetch('/employee/change-password', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPassword, newPassword }),
+        });
+        
+        if (!passRes.ok) {
+          const passError = await passRes.json();
+          throw new Error(passError.message || 'Gagal mengubah kata sandi');
+        }
+      }
+
+      // Update basic profile
       const formData = new FormData();
       formData.append('phone', phone);
       if (photoFile) formData.append('photo', photoFile);
@@ -80,12 +114,19 @@ export default function Employee() {
         localStorage.setItem('user', JSON.stringify(updatedUser));
         setUser(updatedUser);
         setPhone(updatedUser.phone || '');
+        
+        // Reset password fields
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        
+        setIsEditingProfile(false);
         alert('Profil Berhasil Diperbarui!');
       } else {
-        throw new Error('Update failed');
+        throw new Error('Update profile failed');
       }
-    } catch (error) {
-      alert('Gagal update profile.');
+    } catch (error: any) {
+      alert(`Gagal menyimpan perubahan: ${error.message || 'Error tidak diketahui'}`);
     }
   };
 
@@ -108,76 +149,201 @@ export default function Employee() {
   };
 
   return (
-    <div className="container">
-      <div className="flex justify-between items-center gap-3 flex-wrap" style={{ marginBottom: 'var(--sp-4)' }}>
-        <h1 style={{ margin: 0 }}>Karyawan: {user.name}</h1>
+    <div className="container" style={{ padding: 'var(--sp-4) var(--sp-3)', maxWidth: '1200px' }}>
+      {/* Top Bar */}
+      <div className="flex justify-between items-center gap-3 flex-wrap" style={{ 
+        marginBottom: 'var(--sp-4)', 
+        background: 'var(--surface-raised)',
+        padding: 'var(--sp-2) var(--sp-3)',
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid var(--border-default)'
+      }}>
+        <div className="flex items-center gap-3">
+          {/* Logo Placeholder */}
+          <div style={{ width: '36px', height: '36px', background: 'var(--stone)', borderRadius: '50%', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '18px' }}>
+            D
+          </div>
+          <h2 style={{ margin: 0, fontSize: '18px' }}>Karyawan: {user.name}</h2>
+        </div>
         <Button variant="destructive" onClick={() => { localStorage.clear(); navigate('/login') }}>Logout</Button>
       </div>
       
+      {/* Grid Layout */}
       <div className="dashboard-grid">
-        <Card>
-          <h2>Absensi Harian</h2>
-          <div className="flex gap-2" style={{ marginBottom: 'var(--sp-4)' }}>
-            <Button variant="primary" onClick={() => handleAttendance('clock-in')}>Clock In</Button>
-            <Button variant="destructive" onClick={() => handleAttendance('clock-out')}>Clock Out</Button>
-          </div>
-          
-          <h2>Update Profil</h2>
-          <form onSubmit={handleUpdateProfile}>
-            <Input 
-              label="Nomor Telepon"
-              type="text" 
-              value={phone} 
-              onChange={(e) => setPhone(e.target.value)} 
-            />
-            {user.photoUrl && (
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--sage)', display: 'block', marginBottom: '6px' }}>Foto Saat Ini</label>
-                <img src={user.photoUrl} alt="Profil" style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover' }} />
+        
+        {/* Left Column: Profile */}
+        <div className="flex-col gap-4" style={{ display: 'flex' }}>
+          <Card>
+            <h3 style={{ marginBottom: 'var(--sp-4)' }}>Profil Anda</h3>
+            
+            <div className="flex-col items-center text-center" style={{ display: 'flex' }}>
+              {user.photoUrl ? (
+                <img src={user.photoUrl} alt="Profil" style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', marginBottom: 'var(--sp-3)', border: '2px solid var(--border-default)' }} />
+              ) : (
+                <div style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'var(--surface-sunken)', border: '2px solid var(--border-default)', marginBottom: 'var(--sp-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sage)', fontSize: '40px' }}>
+                  {user.name?.charAt(0) || 'U'}
+                </div>
+              )}
+              
+              <h3 style={{ margin: '0 0 var(--sp-1) 0' }}>{user.name}</h3>
+              <p className="text-secondary" style={{ marginBottom: 'var(--sp-3)' }}>{user.role === 'EMPLOYEE' ? 'Karyawan' : user.role}</p>
+              
+              <div style={{ width: '100%', marginBottom: 'var(--sp-4)' }}>
+                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}>{user.email}</p>
+                <p style={{ margin: 0, fontSize: '14px' }}>{user.phone || '-'}</p>
               </div>
-            )}
-            <Input 
-              label="Ganti Foto (MinIO)"
-              type="file" 
-              accept="image/*" 
-              onChange={(e) => setPhotoFile(e.target.files?.[0] || null)} 
-            />
-            <Button type="submit">Simpan Profil</Button>
-          </form>
-        </Card>
-
-        <Card>
-          <div className="flex justify-between items-center gap-3 flex-wrap" style={{ marginBottom: 'var(--sp-3)' }}>
-            <h2 style={{ margin: 0 }}>Riwayat Absensi Anda</h2>
-            <div className="flex gap-2 items-center flex-wrap">
-              <Input type="date" max={getToday()} value={startDate} onChange={e => setStartDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
-              <span>-</span>
-              <Input type="date" max={getToday()} value={endDate} onChange={e => setEndDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
-              <Button onClick={fetchHistory} style={{ height: '44px' }}>Filter</Button>
+              
+              <Button fullWidth variant="primary" style={{ background: '#2563EB', borderColor: '#2563EB', color: 'white' }} onClick={() => setIsEditingProfile(true)}>Edit Profil</Button>
             </div>
-          </div>
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Clock In</th>
-                  <th>Clock Out</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.map(att => (
-                  <tr key={att.id}>
-                    <td>{new Date(att.date).toLocaleDateString()}</td>
-                    <td>{att.clockIn ? new Date(att.clockIn).toLocaleTimeString() : '-'}</td>
-                    <td>{att.clockOut ? new Date(att.clockOut).toLocaleTimeString() : '-'}</td>
+          </Card>
+        </div>
+
+        {/* Right Column: Attendance */}
+        <div className="flex-col gap-4" style={{ display: 'flex' }}>
+          
+          <Card>
+            <h3 style={{ marginBottom: 'var(--sp-4)' }}>Absensi Hari Ini</h3>
+            <div className="flex gap-3 flex-wrap" style={{ marginBottom: 'var(--sp-3)' }}>
+              <Button 
+                style={{ flex: 1, padding: 'var(--sp-3)', fontSize: '16px', background: 'var(--success)', color: 'white', border: 'none' }} 
+                onClick={() => handleAttendance('clock-in')}
+              >
+                Clock In
+              </Button>
+              <Button 
+                variant="destructive"
+                style={{ flex: 1, padding: 'var(--sp-3)', fontSize: '16px' }} 
+                onClick={() => handleAttendance('clock-out')}
+              >
+                Clock Out
+              </Button>
+            </div>
+            <div className="text-center text-secondary" style={{ fontSize: '14px' }}>
+              {currentTime.toLocaleDateString('id-ID')} - {currentTime.toLocaleTimeString('id-ID')}
+            </div>
+          </Card>
+
+          <Card>
+            <div className="flex justify-between items-center gap-3 flex-wrap" style={{ marginBottom: 'var(--sp-4)' }}>
+              <h3 style={{ margin: 0 }}>Riwayat Absensi Anda</h3>
+              <div className="flex gap-2 items-center flex-wrap">
+                <div>
+                  <label className="text-secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>Start Date</label>
+                  <Input type="date" max={getToday()} value={startDate} onChange={e => setStartDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
+                </div>
+                <div>
+                  <label className="text-secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>End Date</label>
+                  <Input type="date" max={getToday()} value={endDate} onChange={e => setEndDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
+                </div>
+                <Button onClick={fetchHistory} style={{ height: '44px', alignSelf: 'flex-end' }}>Filter</Button>
+              </div>
+            </div>
+            <div className="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Clock In</th>
+                    <th>Clock Out</th>
+                    <th>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+                </thead>
+                <tbody>
+                  {history.map(att => (
+                    <tr key={att.id}>
+                      <td><strong>{new Date(att.date).toLocaleDateString()}</strong></td>
+                      <td>{att.clockIn ? new Date(att.clockIn).toLocaleTimeString() : '-'}</td>
+                      <td>{att.clockOut ? new Date(att.clockOut).toLocaleTimeString() : '-'}</td>
+                      <td>
+                        {att.clockOut ? (
+                           <Chip label="Selesai" color="success" />
+                        ) : (
+                           <Chip label="Hadir" color="warning" />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {history.length === 0 && (
+                    <tr>
+                      <td colSpan={4} style={{ textAlign: 'center', padding: 'var(--sp-4)', color: 'var(--sage)' }}>Tidak ada data riwayat absensi.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+        </div>
+
       </div>
+
+      {/* Edit Profile Modal */}
+      {isEditingProfile && (
+        <div className="modal-overlay" style={{ zIndex: 1000 }}>
+          <Card style={{ width: '100%', maxWidth: '600px', margin: '0 var(--sp-3)', padding: 'var(--sp-4)' }}>
+            <h2 style={{ fontSize: '22px', fontWeight: 600, marginBottom: 'var(--sp-4)' }}>Edit Profile and Password</h2>
+            
+            <form onSubmit={handleUpdateProfile}>
+              <h4 style={{ marginBottom: 'var(--sp-3)', borderBottom: '1px solid var(--border-default)', paddingBottom: 'var(--sp-2)' }}>Profile Information</h4>
+              
+              <div className="flex gap-4" style={{ marginBottom: 'var(--sp-4)', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ position: 'relative', width: '90px', height: '90px', marginBottom: 'var(--sp-2)' }}>
+                    {photoFile ? (
+                       <img src={URL.createObjectURL(photoFile)} alt="Preview" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : user.photoUrl ? (
+                      <img src={user.photoUrl} alt="Profil" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--surface-sunken)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sage)', fontSize: '28px' }}>
+                        {user.name?.charAt(0) || 'U'}
+                      </div>
+                    )}
+                  </div>
+                  <label style={{ color: '#2563EB', fontSize: '13px', cursor: 'pointer', fontWeight: 500 }}>
+                    Change Photo
+                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => setPhotoFile(e.target.files?.[0] || null)} />
+                  </label>
+                </div>
+                
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <Input 
+                    label="Phone Number (Nomor Handphone)"
+                    type="text" 
+                    value={phone} 
+                    onChange={(e) => setPhone(e.target.value)} 
+                  />
+                </div>
+              </div>
+              
+              <h4 style={{ marginBottom: 'var(--sp-3)', borderBottom: '1px solid var(--border-default)', paddingBottom: 'var(--sp-2)' }}>Change Password</h4>
+              
+              <div className="flex gap-3" style={{ marginBottom: 'var(--sp-4)', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: '130px' }}>
+                  <Input label="Current Password" type="password" placeholder="••••••••" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                </div>
+                <div style={{ flex: 1, minWidth: '130px' }}>
+                  <Input label="New Password" type="password" placeholder="••••••••" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                </div>
+                <div style={{ flex: 1, minWidth: '130px' }}>
+                  <Input label="Confirm New Password" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                </div>
+              </div>
+              
+              <div className="flex justify-between" style={{ justifyContent: 'flex-end', gap: 'var(--sp-2)' }}>
+                <Button type="button" variant="secondary" onClick={() => {
+                  setIsEditingProfile(false);
+                  setPhone(user.phone || '');
+                  setPhotoFile(null);
+                  setCurrentPassword('');
+                  setNewPassword('');
+                  setConfirmPassword('');
+                }}>Cancel</Button>
+                <Button type="submit" variant="primary">Save Changes</Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

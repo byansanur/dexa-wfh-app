@@ -25,6 +25,15 @@ export class EmployeeController {
     return this.employeeService.getProfile(req.user.userId);
   }
 
+  @Put('change-password')
+  async changePassword(@Req() req: any, @Body() body: any) {
+    return this.employeeService.changePassword(
+      req.user.userId,
+      body.currentPassword,
+      body.newPassword,
+    );
+  }
+
   @Get('attendance/history')
   async getAttendanceHistory(
     @Req() req: any,
