@@ -96,7 +96,10 @@ export class EmployeeService {
 
     return this.prisma.attendance.findMany({
       where: whereClause,
-      orderBy: { date: 'desc' },
+      orderBy: [
+        { date: 'desc' },
+        { clockIn: 'desc' }
+      ],
     });
   }
 }
