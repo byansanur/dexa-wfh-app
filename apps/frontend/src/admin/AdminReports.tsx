@@ -31,7 +31,7 @@ export default function AdminReports() {
   }, [token, page]); // Only refetch automatically when page or token changes
 
   const fetchReport = async () => {
-    let url = `${import.meta.env.VITE_API_URL}/admin/reports/attendance`;
+    let url = `/admin/reports/attendance`;
     const params = new URLSearchParams();
     if (reportStartDate) params.append('startDate', reportStartDate);
     if (reportEndDate) params.append('endDate', reportEndDate);

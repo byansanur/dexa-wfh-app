@@ -1,15 +1,16 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
+import { socket } from '../utils/socket';
 import { Button } from '../components/ui/Button';
-
-const socket = io(`${import.meta.env.VITE_API_URL}`);
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<{id: number, message: string}[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
+    socket.connect(); // Mulai koneksi saat Admin masuk
+
     const handleProfileUpdated = (user: any) => {
       addNotification(`🔔 ${user.name || 'Seseorang'} memperbarui profilnya!`);
     };
@@ -25,6 +26,7 @@ export default function AdminLayout() {
     return () => {
       socket.off('ProfileUpdated', handleProfileUpdated);
       socket.off('AttendanceLogged', handleAttendanceLogged);
+      socket.disconnect(); // Putus koneksi saat keluar dari admin
     };
   }, []);
 
@@ -43,45 +45,59 @@ export default function AdminLayout() {
 
   return (
     <div className="admin-layout">
+      {/* Mobile Header for Hamburger */}
+      <div className="admin-mobile-header">
+        <h2 style={{ margin: 0 }}>DEXA WFH Admin</h2>
+        <button className="hamburger-btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+          ☰
+        </button>
+      </div>
+
       {/* Sidebar */}
-      <div className="admin-sidebar">
-        <h2>DEXA WFH Admin</h2>
+      <div className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        <div className="admin-sidebar-header desktop-only">
+          <h2>DEXA WFH Admin</h2>
+        </div>
         
         <NavLink 
           to="/admin/dashboard" 
+          onClick={() => setIsSidebarOpen(false)}
           className={({ isActive }) => `sidebar-menu-item ${isActive ? 'active' : ''}`}
         >
-          <span>📈</span> Dasbor Utama
+          Dasbor Utama
         </NavLink>
         
         <NavLink 
           to="/admin/employees" 
+          onClick={() => setIsSidebarOpen(false)}
           className={({ isActive }) => `sidebar-menu-item ${isActive ? 'active' : ''}`}
         >
-          <span>🏠</span> Manajemen Karyawan
+          Manajemen Karyawan
         </NavLink>
         
         <NavLink 
           to="/admin/reports" 
+          onClick={() => setIsSidebarOpen(false)}
           className={({ isActive }) => `sidebar-menu-item ${isActive ? 'active' : ''}`}
         >
-          <span>📊</span> Laporan Absensi
+          Laporan Absensi
         </NavLink>
         
         <NavLink 
           to="/admin/logs" 
+          onClick={() => setIsSidebarOpen(false)}
           className={({ isActive }) => `sidebar-menu-item ${isActive ? 'active' : ''}`}
         >
-          <span>🛡️</span> MongoDB Audit Logs
+          MongoDB Audit Logs
         </NavLink>
 
-        <div style={{ flex: 1 }}></div>
+        <div style={{ flex: 1 }} className="desktop-only"></div>
 
         <Button 
           variant="destructive" 
           fullWidth
           style={{ marginTop: 'auto' }} 
-          onClick={handleLogout}
+          onClick={() => { setIsSidebarOpen(false); handleLogout(); }}
         >
           Logout
         </Button>

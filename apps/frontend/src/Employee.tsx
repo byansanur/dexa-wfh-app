@@ -94,8 +94,8 @@ export default function Employee() {
 
   return (
     <div className="container">
-      <div className="flex justify-between items-center" style={{ marginBottom: 'var(--sp-4)' }}>
-        <h1>Karyawan: {user.name}</h1>
+      <div className="flex justify-between items-center gap-3 flex-wrap" style={{ marginBottom: 'var(--sp-4)' }}>
+        <h1 style={{ margin: 0 }}>Karyawan: {user.name}</h1>
         <Button variant="destructive" onClick={() => { localStorage.clear(); navigate('/login') }}>Logout</Button>
       </div>
       
@@ -126,9 +126,9 @@ export default function Employee() {
         </Card>
 
         <Card>
-          <div className="flex justify-between items-center" style={{ marginBottom: 'var(--sp-3)' }}>
+          <div className="flex justify-between items-center gap-3 flex-wrap" style={{ marginBottom: 'var(--sp-3)' }}>
             <h2 style={{ margin: 0 }}>Riwayat Absensi Anda</h2>
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center flex-wrap">
               <Input type="date" max={getToday()} value={startDate} onChange={e => setStartDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
               <span>-</span>
               <Input type="date" max={getToday()} value={endDate} onChange={e => setEndDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />

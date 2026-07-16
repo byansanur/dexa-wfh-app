@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
+import { socket } from '../utils/socket';
 import Pagination from './components/Pagination';
 import { apiFetch } from '../utils/api';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-
-const socket = io(`${import.meta.env.VITE_API_URL}`);
 
 export default function AdminLogs() {
   const [token] = useState(() => localStorage.getItem('token'));

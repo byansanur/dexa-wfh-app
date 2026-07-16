@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
+import { socket } from '../utils/socket';
 import Pagination from './components/Pagination';
 import { apiFetch } from '../utils/api';
 import { Card } from '../components/ui/Card';
 import { Chip } from '../components/ui/Chip';
 import { Input } from '../components/ui/Input';
-
-const socket = io(`${import.meta.env.VITE_API_URL}`);
 
 export default function AdminDashboard() {
   const [token] = useState(() => localStorage.getItem('token'));
@@ -52,7 +50,7 @@ export default function AdminDashboard() {
   };
 
   const fetchEmployees = async () => {
-    let url = `${import.meta.env.VITE_API_URL}/admin/employees?page=${page}&limit=${limit}&search=${encodeURIComponent(searchQuery)}`;
+    let url = `/admin/employees?page=${page}&limit=${limit}&search=${encodeURIComponent(searchQuery)}`;
     if (statusFilter === 'PRESENT') url += '&status=Hadir';
     else if (statusFilter === 'COMPLETED') url += '&status=Selesai';
     else if (statusFilter === 'ABSENT') url += '&status=Belum Absen';
