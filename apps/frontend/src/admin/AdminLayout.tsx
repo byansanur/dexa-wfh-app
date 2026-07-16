@@ -1,7 +1,39 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:3000');
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const [notifications, setNotifications] = useState<{id: number, message: string}[]>([]);
+
+  useEffect(() => {
+    const handleProfileUpdated = (user: any) => {
+      addNotification(`🔔 ${user.name || 'Seseorang'} memperbarui profilnya!`);
+    };
+    
+    const handleAttendanceLogged = (attendance: any) => {
+      const isClockIn = !attendance.clockOut;
+      addNotification(`🕒 Karyawan melakukan ${isClockIn ? 'Clock-In' : 'Clock-Out'}!`);
+    };
+
+    socket.on('ProfileUpdated', handleProfileUpdated);
+    socket.on('AttendanceLogged', handleAttendanceLogged);
+
+    return () => {
+      socket.off('ProfileUpdated', handleProfileUpdated);
+      socket.off('AttendanceLogged', handleAttendanceLogged);
+    };
+  }, []);
+
+  const addNotification = (message: string) => {
+    const id = Date.now() + Math.random();
+    setNotifications(prev => [...prev, { id, message }]);
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 5000);
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -49,6 +81,15 @@ export default function AdminLayout() {
       {/* Main Content Area */}
       <div className="admin-main-content">
         <Outlet />
+      </div>
+
+      {/* Floating Notifications */}
+      <div style={{ position: 'fixed', bottom: '2rem', right: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', zIndex: 1000, pointerEvents: 'none' }}>
+        {notifications.map(n => (
+          <div key={n.id} className="notification-toast" style={{ position: 'relative', bottom: 'auto', right: 'auto' }}>
+            {n.message}
+          </div>
+        ))}
       </div>
     </div>
   );
