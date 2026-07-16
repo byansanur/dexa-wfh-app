@@ -143,7 +143,7 @@ export default function AdminEmployees() {
         <Card style={{ display: 'flex', flexDirection: 'column' }}>
           <h2 style={{ marginTop: 0 }}>Bulk Upload (CSV)</h2>
           <p className="text-secondary" style={{ marginBottom: '1.5rem' }}>Unggah file CSV untuk mengimpor banyak karyawan sekaligus secara instan.</p>
-          <div style={{ background: 'var(--surface-sunken)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
+          <div style={{ background: 'var(--surface-sunken)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', wordBreak: 'break-all' }}>
             <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--sage)' }}>Format Header CSV:</span><br/>
             <code style={{ fontSize: '13px', color: 'var(--stone)' }}>email,name,attendanceType</code>
           </div>
