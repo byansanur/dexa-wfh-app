@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import AdminLayout from './admin/AdminLayout';
+import AdminDashboard from './admin/AdminDashboard';
 import AdminEmployees from './admin/AdminEmployees';
 import AdminReports from './admin/AdminReports';
 import AdminLogs from './admin/AdminLogs';
@@ -21,7 +22,8 @@ export default function Admin() {
   return (
     <Routes>
       <Route element={<AdminLayout />}>
-        <Route path="/" element={<Navigate to="employees" replace />} />
+        <Route path="/" element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="employees" element={<AdminEmployees />} />
         <Route path="reports" element={<AdminReports />} />
         <Route path="logs" element={<AdminLogs />} />

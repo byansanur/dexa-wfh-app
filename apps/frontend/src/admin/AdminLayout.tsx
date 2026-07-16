@@ -2,7 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:3000');
+const socket = io(`${import.meta.env.VITE_API_URL}`);
 
 export default function AdminLayout() {
   const navigate = useNavigate();
@@ -45,6 +45,13 @@ export default function AdminLayout() {
       {/* Sidebar */}
       <div className="admin-sidebar">
         <h2>DEXA WFH Admin</h2>
+        
+        <NavLink 
+          to="/admin/dashboard" 
+          className={({ isActive }) => `sidebar-menu-item ${isActive ? 'active' : ''}`}
+        >
+          <span>📈</span> Dasbor Utama
+        </NavLink>
         
         <NavLink 
           to="/admin/employees" 

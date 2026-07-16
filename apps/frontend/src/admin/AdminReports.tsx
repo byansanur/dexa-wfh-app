@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '../utils/api';
 import Pagination from './components/Pagination';
 
 export default function AdminReports() {
@@ -27,7 +28,7 @@ export default function AdminReports() {
   }, [token, page]); // Only refetch automatically when page or token changes
 
   const fetchReport = async () => {
-    let url = 'http://localhost:3000/admin/reports/attendance';
+    let url = `${import.meta.env.VITE_API_URL}/admin/reports/attendance`;
     const params = new URLSearchParams();
     if (reportStartDate) params.append('startDate', reportStartDate);
     if (reportEndDate) params.append('endDate', reportEndDate);
@@ -37,8 +38,8 @@ export default function AdminReports() {
     
     url += `?${params.toString()}`;
     
-    const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-    if (res.ok) {
+    const res = await apiFetch(url);
+    if(res.ok) {
       const result = await res.json();
       setReportData(result.data);
       setTotalPages(result.meta.totalPages);
@@ -63,6 +64,11 @@ export default function AdminReports() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.85rem', color: '#64748b' }}>Sampai:</label>
               <input type="date" max={getToday()} value={reportEndDate} onChange={e => setReportEndDate(e.target.value)} style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+              <select value={limit} onChange={e => { setLimit(Number(e.target.value)); setPage(1); }} style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid #cbd5e1' }}>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+              </select>
             </div>
             <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', width: 'auto' }} onClick={handleFilterSubmit}>Terapkan Filter</button>
             <input 

@@ -14,6 +14,38 @@ import { Readable } from 'stream';
 export class AdminController {
   constructor(private readonly prisma: PrismaService) {}
 
+  @Get('dashboard-stats')
+  async getDashboardStats() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [totalEmployees, presentToday, topPunctual] = await Promise.all([
+      this.prisma.user.count({ where: { role: 'EMPLOYEE' } }),
+      this.prisma.attendance.count({ where: { date: today } }),
+      this.prisma.attendance.findMany({
+        where: { date: today },
+        orderBy: { clockIn: 'asc' },
+        take: 3,
+        include: { user: { select: { name: true, email: true, photoUrl: true } } }
+      })
+    ]);
+
+    const absentToday = totalEmployees - presentToday;
+
+    return {
+      totalEmployees,
+      presentToday,
+      absentToday,
+      topPunctual: topPunctual.map(att => ({
+        id: att.id,
+        clockIn: att.clockIn,
+        name: att.user.name,
+        email: att.user.email,
+        photoUrl: att.user.photoUrl
+      }))
+    };
+  }
+
   @Get('employees')
   async getEmployees(
     @Query('page') page: string = '1',
@@ -43,6 +75,8 @@ export class AdminController {
       where.Attendances = { some: { date: today, clockOut: { not: null } } };
     } else if (status === 'Belum Absen') {
       where.Attendances = { none: { date: today } };
+    } else if (status === 'Semua Hadir') {
+      where.Attendances = { some: { date: today } };
     }
 
     const [employees, total] = await Promise.all([
@@ -174,6 +208,7 @@ export class AdminController {
         email: body.email,
         role: body.role,
         phone: body.phone,
+        attendanceType: body.attendanceType,
       }
     });
   }

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import Pagination from './components/Pagination';
+import { apiFetch } from '../utils/api';
 
-const socket = io('http://localhost:3000');
+const socket = io(`${import.meta.env.VITE_API_URL}`);
 
 export default function AdminLogs() {
   const [token] = useState(() => localStorage.getItem('token'));
@@ -51,7 +52,7 @@ export default function AdminLogs() {
   }, []);
 
   const fetchEmployees = async () => {
-    const res = await fetch('http://localhost:3000/admin/employees?limit=1000', { headers: { 'Authorization': `Bearer ${token}` } });
+    const res = await apiFetch('/admin/employees?limit=1000');
     if(res.ok) {
       const result = await res.json();
       setEmployees(result.data || []);
@@ -59,7 +60,7 @@ export default function AdminLogs() {
   };
 
   const fetchProfileLogs = async () => {
-    const res = await fetch(`http://localhost:3000/audit-log/profile?page=${profilePage}&limit=${limit}`, { headers: { 'Authorization': `Bearer ${token}` } });
+    const res = await apiFetch(`/audit-log/profile?page=${profilePage}&limit=${limit}`);
     if(res.ok) {
       const result = await res.json();
       setAuditProfile(result.data);
@@ -68,7 +69,7 @@ export default function AdminLogs() {
   };
 
   const fetchAttendanceLogs = async () => {
-    const res = await fetch(`http://localhost:3000/audit-log/attendance?page=${attendancePage}&limit=${limit}`, { headers: { 'Authorization': `Bearer ${token}` } });
+    const res = await apiFetch(`/audit-log/attendance?page=${attendancePage}&limit=${limit}`);
     if(res.ok) {
       const result = await res.json();
       setAuditAttendance(result.data);

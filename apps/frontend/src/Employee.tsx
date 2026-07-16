@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from './utils/api';
 import { useNavigate } from 'react-router-dom';
 
 export default function Employee() {
@@ -32,15 +33,12 @@ export default function Employee() {
 
   const fetchHistory = async () => {
     try {
-      let url = 'http://localhost:3000/employee/attendance/history';
       const params = new URLSearchParams();
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
-      if (params.toString()) url += `?${params.toString()}`;
-
-      const res = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      
+      const url = `/employee/attendance/history?${params.toString()}`;
+      const res = await apiFetch(url);
       const data = await res.json();
       setHistory(data);
     } catch (e) {
@@ -55,9 +53,8 @@ export default function Employee() {
       formData.append('phone', phone);
       if (photoFile) formData.append('photo', photoFile);
 
-      const res = await fetch('http://localhost:3000/employee/profile', {
+      const res = await apiFetch('/employee/profile', {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` },
         body: formData,
       });
       if (res.ok) {
@@ -76,9 +73,9 @@ export default function Employee() {
 
   const handleAttendance = async (type: 'clock-in' | 'clock-out') => {
     try {
-      const res = await fetch(`http://localhost:3000/attendance/${type}`, {
+      const res = await apiFetch(`/attendance/${type}`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       });
       if (!res.ok) {
