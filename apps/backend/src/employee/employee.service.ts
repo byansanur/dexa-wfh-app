@@ -47,4 +47,24 @@ export class EmployeeService {
 
     return updatedUser;
   }
+
+  async getAttendanceHistory(userId: string, startDate?: string, endDate?: string) {
+    const whereClause: any = { userId };
+    
+    if (startDate || endDate) {
+      whereClause.date = {};
+      if (startDate) whereClause.date.gte = new Date(startDate);
+      if (endDate) whereClause.date.lte = new Date(endDate);
+    } else {
+      const now = new Date();
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      whereClause.date = { gte: firstDay, lte: lastDay };
+    }
+
+    return this.prisma.attendance.findMany({
+      where: whereClause,
+      orderBy: { date: 'desc' },
+    });
+  }
 }

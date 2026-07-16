@@ -1,4 +1,4 @@
-import { Controller, Put, Body, UseInterceptors, UploadedFile, UseGuards, Req } from '@nestjs/common';
+import { Controller, Put, Body, UseInterceptors, UploadedFile, UseGuards, Req, Get, Query } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { EmployeeService } from './employee.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -18,5 +18,14 @@ export class EmployeeController {
     return this.employeeService.updateProfile(req.user.userId, {
       phone: body.phone,
     }, file);
+  }
+
+  @Get('attendance/history')
+  async getAttendanceHistory(
+    @Req() req: any,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.employeeService.getAttendanceHistory(req.user.userId, startDate, endDate);
   }
 }

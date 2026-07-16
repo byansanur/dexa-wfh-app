@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, UseGuards, UseInterceptors, UploadedFile, Query } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -42,6 +42,41 @@ export class AdminController {
         clockOut: latestAttendance?.clockOut || null,
       };
     });
+  }
+
+  @Get('reports/attendance')
+  async getAttendanceReport(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    const whereClause: any = {};
+    
+    if (startDate || endDate) {
+      whereClause.date = {};
+      if (startDate) whereClause.date.gte = new Date(startDate);
+      if (endDate) whereClause.date.lte = new Date(endDate);
+    }
+
+    const attendances = await this.prisma.attendance.findMany({
+      where: whereClause,
+      orderBy: { date: 'desc' },
+      include: {
+        user: {
+          select: { name: true, email: true, attendanceType: true }
+        }
+      }
+    });
+
+    return attendances.map(att => ({
+      id: att.id,
+      userId: att.userId,
+      date: att.date,
+      clockIn: att.clockIn,
+      clockOut: att.clockOut,
+      name: att.user.name,
+      email: att.user.email,
+      attendanceType: att.user.attendanceType,
+    }));
   }
 
   @Post('employee')
