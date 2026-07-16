@@ -48,6 +48,16 @@ export class EmployeeService {
     return updatedUser;
   }
 
+  async getProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (user) {
+      delete user.password;
+    }
+    return user;
+  }
+
   async getAttendanceHistory(userId: string, startDate?: string, endDate?: string) {
     const whereClause: any = { userId };
     

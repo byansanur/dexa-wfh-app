@@ -20,6 +20,11 @@ export class EmployeeController {
     }, file);
   }
 
+  @Get('profile')
+  async getProfile(@Req() req: any) {
+    return this.employeeService.getProfile(req.user.userId);
+  }
+
   @Get('attendance/history')
   async getAttendanceHistory(
     @Req() req: any,

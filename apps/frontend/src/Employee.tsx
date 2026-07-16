@@ -31,8 +31,23 @@ export default function Employee() {
       navigate('/login');
       return;
     }
+    fetchProfile();
     fetchHistory();
   }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await apiFetch('/employee/profile');
+      if (res.ok) {
+        const latestUser = await res.json();
+        localStorage.setItem('user', JSON.stringify(latestUser));
+        setUser(latestUser);
+        setPhone(latestUser.phone || '');
+      }
+    } catch (e) {
+      console.error('Failed to fetch profile', e);
+    }
+  };
 
   const fetchHistory = async () => {
     try {
@@ -115,6 +130,12 @@ export default function Employee() {
               value={phone} 
               onChange={(e) => setPhone(e.target.value)} 
             />
+            {user.photoUrl && (
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--sage)', display: 'block', marginBottom: '6px' }}>Foto Saat Ini</label>
+                <img src={user.photoUrl} alt="Profil" style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover' }} />
+              </div>
+            )}
             <Input 
               label="Ganti Foto (MinIO)"
               type="file" 
