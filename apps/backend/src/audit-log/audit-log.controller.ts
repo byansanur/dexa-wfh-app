@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, UseGuards, Query, Post } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { AuditLogService } from './audit-log.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -31,5 +31,10 @@ export class AuditLogController {
   @Roles('ADMIN')
   async getAttendanceLogs(@Query('page') page?: string, @Query('limit') limit?: string) {
     return this.auditLogService.findAttendanceLogs(page, limit);
+  }
+
+  @Post('archive')
+  async triggerManualArchive() {
+    return this.auditLogService.manualExport();
   }
 }

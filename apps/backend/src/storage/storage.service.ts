@@ -62,4 +62,18 @@ export class StorageService implements OnModuleInit {
     const port = process.env.MINIO_PORT || '9000';
     return `http://${endPoint}:${port}/${this.bucketName}/${fileName}`;
   }
+
+  async uploadBuffer(buffer: Buffer, fileName: string, mimetype: string): Promise<string> {
+    await this.minioClient.putObject(
+      this.bucketName,
+      fileName,
+      buffer,
+      buffer.length,
+      { 'Content-Type': mimetype }
+    );
+
+    const endPoint = process.env.MINIO_ENDPOINT || 'localhost';
+    const port = process.env.MINIO_PORT || '9000';
+    return `http://${endPoint}:${port}/${this.bucketName}/${fileName}`;
+  }
 }
