@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Query } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { AuditLogService } from './audit-log.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -22,14 +22,14 @@ export class AuditLogController {
   @Get('profile')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  async getProfileLogs() {
-    return this.auditLogService.findProfileLogs();
+  async getProfileLogs(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.auditLogService.findProfileLogs(page, limit);
   }
 
   @Get('attendance')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  async getAttendanceLogs() {
-    return this.auditLogService.findAttendanceLogs();
+  async getAttendanceLogs(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.auditLogService.findAttendanceLogs(page, limit);
   }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
+import Pagination from './components/Pagination';
 
 const socket = io('http://localhost:3000');
 
@@ -11,20 +12,35 @@ export default function AdminLogs() {
   const [auditAttendance, setAuditAttendance] = useState<any[]>([]);
   const [selectedLog, setSelectedLog] = useState<any>(null);
 
-  useEffect(() => {
-    if (token) {
-      fetchEmployees();
-      fetchLogs();
-    }
+  const [profilePage, setProfilePage] = useState(1);
+  const [profileTotalPages, setProfileTotalPages] = useState(1);
+  
+  const [attendancePage, setAttendancePage] = useState(1);
+  const [attendanceTotalPages, setAttendanceTotalPages] = useState(1);
+  
+  const [limit] = useState(10);
 
+  useEffect(() => {
+    if (token) fetchEmployees();
+  }, [token]);
+
+  useEffect(() => {
+    if (token) fetchProfileLogs();
+  }, [token, profilePage]);
+
+  useEffect(() => {
+    if (token) fetchAttendanceLogs();
+  }, [token, attendancePage]);
+
+  useEffect(() => {
     socket.on('connect', () => console.log('WS AdminLogs Connected'));
     socket.on('ProfileUpdated', () => { 
       fetchEmployees(); 
-      setTimeout(fetchLogs, 500); 
+      setTimeout(() => fetchProfileLogs(), 500); 
     });
     socket.on('AttendanceLogged', () => { 
       fetchEmployees(); 
-      setTimeout(fetchLogs, 500); 
+      setTimeout(() => fetchAttendanceLogs(), 500); 
     });
 
     return () => {
@@ -32,19 +48,32 @@ export default function AdminLogs() {
       socket.off('ProfileUpdated');
       socket.off('AttendanceLogged');
     };
-  }, [token]);
+  }, []);
 
   const fetchEmployees = async () => {
-    const res = await fetch('http://localhost:3000/admin/employees', { headers: { 'Authorization': `Bearer ${token}` } });
-    if(res.ok) setEmployees(await res.json());
+    const res = await fetch('http://localhost:3000/admin/employees?limit=1000', { headers: { 'Authorization': `Bearer ${token}` } });
+    if(res.ok) {
+      const result = await res.json();
+      setEmployees(result.data || []);
+    }
   };
 
-  const fetchLogs = async () => {
-    const resP = await fetch('http://localhost:3000/audit-log/profile', { headers: { 'Authorization': `Bearer ${token}` } });
-    if(resP.ok) setAuditProfile(await resP.json());
-    
-    const resA = await fetch('http://localhost:3000/audit-log/attendance', { headers: { 'Authorization': `Bearer ${token}` } });
-    if(resA.ok) setAuditAttendance(await resA.json());
+  const fetchProfileLogs = async () => {
+    const res = await fetch(`http://localhost:3000/audit-log/profile?page=${profilePage}&limit=${limit}`, { headers: { 'Authorization': `Bearer ${token}` } });
+    if(res.ok) {
+      const result = await res.json();
+      setAuditProfile(result.data);
+      setProfileTotalPages(result.meta.totalPages);
+    }
+  };
+
+  const fetchAttendanceLogs = async () => {
+    const res = await fetch(`http://localhost:3000/audit-log/attendance?page=${attendancePage}&limit=${limit}`, { headers: { 'Authorization': `Bearer ${token}` } });
+    if(res.ok) {
+      const result = await res.json();
+      setAuditAttendance(result.data);
+      setAttendanceTotalPages(result.meta.totalPages);
+    }
   };
 
   return (
@@ -85,6 +114,7 @@ export default function AdminLogs() {
               </tbody>
             </table>
           </div>
+          <Pagination page={profilePage} totalPages={profileTotalPages} onPageChange={setProfilePage} />
         </div>
 
         <div className="card">
@@ -106,6 +136,7 @@ export default function AdminLogs() {
               </tbody>
             </table>
           </div>
+          <Pagination page={attendancePage} totalPages={attendanceTotalPages} onPageChange={setAttendancePage} />
         </div>
       </div>
 

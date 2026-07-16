@@ -15,22 +15,54 @@ export class AdminController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get('employees')
-  async getEmployees() {
+  async getEmployees(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('search') search: string = '',
+    @Query('status') status: string = ''
+  ) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const employees = await this.prisma.user.findMany({
-      where: { role: 'EMPLOYEE' },
-      include: {
-        Attendances: {
-          where: { date: today },
-          orderBy: { createdAt: 'desc' }, // Order by latest to pick the most recent session
-        },
-      },
-    });
+    const take = parseInt(limit, 10) || 10;
+    const pageNum = parseInt(page, 10) || 1;
+    const skip = (pageNum - 1) * take;
 
-    return employees.map((emp) => {
-      const latestAttendance = emp.Attendances[0]; // Gets the latest session
+    const where: any = { role: 'EMPLOYEE' };
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    if (status === 'Hadir') {
+      where.Attendances = { some: { date: today, clockOut: null } };
+    } else if (status === 'Selesai') {
+      where.Attendances = { some: { date: today, clockOut: { not: null } } };
+    } else if (status === 'Belum Absen') {
+      where.Attendances = { none: { date: today } };
+    }
+
+    const [employees, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { name: 'asc' },
+        include: {
+          Attendances: {
+            where: { date: today },
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+      }),
+      this.prisma.user.count({ where })
+    ]);
+
+    const data = employees.map((emp) => {
+      const latestAttendance = emp.Attendances[0];
       return {
         id: emp.id,
         name: emp.name,
@@ -42,13 +74,30 @@ export class AdminController {
         clockOut: latestAttendance?.clockOut || null,
       };
     });
+
+    return {
+      data,
+      meta: {
+        total,
+        page: pageNum,
+        limit: take,
+        totalPages: Math.ceil(total / take)
+      }
+    };
   }
 
   @Get('reports/attendance')
   async getAttendanceReport(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('search') search: string = '',
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
+    const take = parseInt(limit, 10) || 10;
+    const pageNum = parseInt(page, 10) || 1;
+    const skip = (pageNum - 1) * take;
+
     const whereClause: any = {};
     
     if (startDate || endDate) {
@@ -57,17 +106,29 @@ export class AdminController {
       if (endDate) whereClause.date.lte = new Date(endDate);
     }
 
-    const attendances = await this.prisma.attendance.findMany({
-      where: whereClause,
-      orderBy: { date: 'desc' },
-      include: {
-        user: {
-          select: { name: true, email: true, attendanceType: true }
-        }
-      }
-    });
+    if (search) {
+      whereClause.user = {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } }
+        ]
+      };
+    }
 
-    return attendances.map(att => ({
+    const [attendances, total] = await Promise.all([
+      this.prisma.attendance.findMany({
+        where: whereClause,
+        skip,
+        take,
+        orderBy: { date: 'desc' },
+        include: {
+          user: { select: { name: true, email: true, attendanceType: true } }
+        }
+      }),
+      this.prisma.attendance.count({ where: whereClause })
+    ]);
+
+    const data = attendances.map(att => ({
       id: att.id,
       userId: att.userId,
       date: att.date,
@@ -77,6 +138,16 @@ export class AdminController {
       email: att.user.email,
       attendanceType: att.user.attendanceType,
     }));
+
+    return {
+      data,
+      meta: {
+        total,
+        page: pageNum,
+        limit: take,
+        totalPages: Math.ceil(total / take)
+      }
+    };
   }
 
   @Post('employee')

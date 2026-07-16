@@ -15,13 +15,35 @@ export class AuditLogService {
     });
   }
 
-  async findProfileLogs() {
+  async findProfileLogs(page: string = '1', limit: string = '10') {
+    const take = parseInt(limit, 10) || 10;
+    const pageNum = parseInt(page, 10) || 1;
+    const skip = (pageNum - 1) * take;
+    
     const collection = this.connection.collection('audit_logs');
-    return collection.find({ type: 'PROFILE_UPDATED' }).sort({ _receivedAt: -1 }).limit(100).toArray();
+    const query = { type: 'PROFILE_UPDATED' };
+    
+    const [data, total] = await Promise.all([
+      collection.find(query).sort({ _receivedAt: -1 }).skip(skip).limit(take).toArray(),
+      collection.countDocuments(query)
+    ]);
+    
+    return { data, meta: { total, page: pageNum, limit: take, totalPages: Math.ceil(total / take) } };
   }
 
-  async findAttendanceLogs() {
+  async findAttendanceLogs(page: string = '1', limit: string = '10') {
+    const take = parseInt(limit, 10) || 10;
+    const pageNum = parseInt(page, 10) || 1;
+    const skip = (pageNum - 1) * take;
+
     const collection = this.connection.collection('audit_logs');
-    return collection.find({ type: 'ATTENDANCE_LOGGED' }).sort({ _receivedAt: -1 }).limit(100).toArray();
+    const query = { type: 'ATTENDANCE_LOGGED' };
+    
+    const [data, total] = await Promise.all([
+      collection.find(query).sort({ _receivedAt: -1 }).skip(skip).limit(take).toArray(),
+      collection.countDocuments(query)
+    ]);
+
+    return { data, meta: { total, page: pageNum, limit: take, totalPages: Math.ceil(total / take) } };
   }
 }

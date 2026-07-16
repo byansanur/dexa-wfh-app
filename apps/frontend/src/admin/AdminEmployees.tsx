@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
+import Pagination from './components/Pagination';
 
 const socket = io('http://localhost:3000');
 
@@ -15,10 +16,15 @@ export default function AdminEmployees() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
+
   useEffect(() => {
     if (token) fetchEmployees();
+  }, [token, page, searchQuery, statusFilter]);
 
-    socket.on('connect', () => console.log('WS AdminEmployees Connected'));
+  useEffect(() => {
     socket.on('ProfileUpdated', () => fetchEmployees());
     socket.on('AttendanceLogged', () => fetchEmployees());
 
@@ -30,8 +36,19 @@ export default function AdminEmployees() {
   }, [token]);
 
   const fetchEmployees = async () => {
-    const res = await fetch('http://localhost:3000/admin/employees', { headers: { 'Authorization': `Bearer ${token}` } });
-    if(res.ok) setEmployees(await res.json());
+    let url = `http://localhost:3000/admin/employees?page=${page}&limit=${limit}&search=${encodeURIComponent(searchQuery)}`;
+    
+    // Status mapping backend vs frontend
+    if (statusFilter === 'PRESENT') url += '&status=Hadir';
+    else if (statusFilter === 'COMPLETED') url += '&status=Selesai';
+    else if (statusFilter === 'ABSENT') url += '&status=Belum Absen';
+
+    const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+    if(res.ok) {
+      const result = await res.json();
+      setEmployees(result.data);
+      setTotalPages(result.meta.totalPages);
+    }
   };
 
   const handleAddEmployee = async (e: React.FormEvent) => {
@@ -60,17 +77,15 @@ export default function AdminEmployees() {
     fetchEmployees();
   };
 
-  const filteredEmployees = employees.filter(emp => {
-    const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          emp.email.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    let matchesStatus = true;
-    if (statusFilter === 'PRESENT') matchesStatus = emp.clockIn && !emp.clockOut;
-    else if (statusFilter === 'COMPLETED') matchesStatus = emp.clockIn && emp.clockOut;
-    else if (statusFilter === 'ABSENT') matchesStatus = !emp.clockIn;
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setPage(1); // Reset page on search
+  };
 
-    return matchesSearch && matchesStatus;
-  });
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatusFilter(e.target.value);
+    setPage(1); // Reset page on filter
+  };
 
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
@@ -114,12 +129,12 @@ export default function AdminEmployees() {
                 type="text" 
                 placeholder="Cari Nama / Email..." 
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
               />
               <select 
                 value={statusFilter} 
-                onChange={e => setStatusFilter(e.target.value)}
+                onChange={handleStatusChange}
                 style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: 'white' }}
               >
                 <option value="ALL">Semua Status</option>
@@ -144,7 +159,7 @@ export default function AdminEmployees() {
                 </tr>
               </thead>
               <tbody>
-                {filteredEmployees.map(emp => (
+                {employees.map(emp => (
                   <tr key={emp.id}>
                     <td>
                       <img src={emp.photoUrl || 'https://ui-avatars.com/api/?name=' + emp.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} alt="" />
@@ -165,6 +180,7 @@ export default function AdminEmployees() {
               </tbody>
             </table>
           </div>
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
       </div>
     </div>
