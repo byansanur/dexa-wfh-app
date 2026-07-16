@@ -69,14 +69,10 @@ export class AttendanceService {
   }
 
   async clockOut(userId: string) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     // Cari sesi absensi aktif (belum clock out)
     const activeSession = await this.prisma.attendance.findFirst({
       where: {
         userId,
-        date: today,
         clockOut: null,
       },
       orderBy: { createdAt: 'desc' }

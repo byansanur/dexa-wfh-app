@@ -21,10 +21,11 @@ export class AdminController {
 
     const [totalEmployees, presentToday, topPunctual] = await Promise.all([
       this.prisma.user.count({ where: { role: 'EMPLOYEE' } }),
-      this.prisma.attendance.count({ where: { date: today } }),
+      this.prisma.user.count({ where: { role: 'EMPLOYEE', Attendances: { some: { date: today } } } }),
       this.prisma.attendance.findMany({
         where: { date: today },
         orderBy: { clockIn: 'asc' },
+        distinct: ['userId'],
         take: 3,
         include: { user: { select: { name: true, email: true, photoUrl: true } } }
       })

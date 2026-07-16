@@ -181,14 +181,16 @@ export default function Employee() {
             <div className="flex gap-3 flex-wrap" style={{ marginBottom: 'var(--sp-3)' }}>
               <Button 
                 variant="success"
-                style={{ flex: 1, padding: 'var(--sp-3)', fontSize: '16px', border: 'none' }} 
+                size="lg"
+                style={{ flex: 1, border: 'none' }} 
                 onClick={() => handleAttendance('clock-in')}
               >
                 Clock In
               </Button>
               <Button 
                 variant="destructive"
-                style={{ flex: 1, padding: 'var(--sp-3)', fontSize: '16px' }} 
+                size="lg"
+                style={{ flex: 1 }} 
                 onClick={() => handleAttendance('clock-out')}
               >
                 Clock Out
@@ -232,9 +234,9 @@ export default function Employee() {
                       <td>{att.clockOut ? new Date(att.clockOut).toLocaleTimeString() : '-'}</td>
                       <td>
                         {att.clockOut ? (
-                           <Chip label="Selesai" color="success" />
+                           <Chip type="status" status="present">Selesai</Chip>
                         ) : (
-                           <Chip label="Hadir" color="warning" />
+                           <Chip type="status" status="draft">Hadir</Chip>
                         )}
                       </td>
                     </tr>

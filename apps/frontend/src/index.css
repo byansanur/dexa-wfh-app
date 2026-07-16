@@ -133,6 +133,10 @@ code, .mono {
   gap: var(--sp-4);
 }
 
+.dashboard-grid > div, .responsive-grid-2-3 > div, .responsive-grid-1-1 > div {
+  min-width: 0;
+}
+
 .responsive-grid-2-3 {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -158,6 +162,22 @@ code, .mono {
 .gap-4 { gap: var(--sp-4); }
 
 /* Overlays / Modals (ZenGrid) */
+.zengrid-card {
+  background: var(--surface-raised);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+.zengrid-card.elevated {
+  border: 1px solid var(--border-strong);
+  padding: var(--sp-5);
+}
+
+.zengrid-card:not(.elevated) {
+  border: 1px solid var(--border-default);
+  padding: var(--sp-4);
+}
+
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -256,6 +276,11 @@ code, .mono {
   h1 { font-size: 28px; margin-bottom: var(--sp-2); }
   h2 { font-size: 22px; margin-bottom: var(--sp-2); }
   
+  .container {
+    margin: var(--sp-3) auto;
+    padding: 0 var(--sp-2);
+  }
+
   .desktop-only { display: none !important; }
 
   .admin-mobile-header {
@@ -281,6 +306,14 @@ code, .mono {
   .dashboard-grid {
     grid-template-columns: 1fr !important;
     gap: var(--sp-3);
+  }
+
+  .zengrid-card:not(.elevated) {
+    padding: var(--sp-3);
+  }
+  
+  .zengrid-card.elevated {
+    padding: var(--sp-4);
   }
   
   .admin-layout {
