@@ -155,6 +155,11 @@ export default function AdminLogs() {
                 <br />
                 <code style={{ backgroundColor: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', marginTop: '0.25rem', display: 'inline-block' }}>{selectedLog.userId}</code>
               </div>
+
+              <div>
+                <strong>Waktu Perubahan:</strong><br />
+                <span style={{ color: 'var(--text-secondary)' }}>{new Date(selectedLog._receivedAt).toLocaleString()}</span>
+              </div>
               
               <div>
                 <strong>Perubahan Nomor HP:</strong><br />
@@ -179,6 +184,15 @@ export default function AdminLogs() {
                       Buka Tautan Asli (MinIO)
                     </a>
                   </div>
+                ) : (
+                  <span style={{ color: '#94a3b8' }}>Tidak ada perubahan</span>
+                )}
+              </div>
+
+              <div>
+                <strong>Perubahan Kata Sandi:</strong><br />
+                {selectedLog.changes?.password ? (
+                  <span style={{ color: 'var(--success)', fontWeight: 500 }}>🔐 Kata sandi berhasil diubah</span>
                 ) : (
                   <span style={{ color: '#94a3b8' }}>Tidak ada perubahan</span>
                 )}

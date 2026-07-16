@@ -5,6 +5,7 @@ import { Card } from './components/ui/Card';
 import { Button } from './components/ui/Button';
 import { Input } from './components/ui/Input';
 import { Chip } from './components/ui/Chip';
+import { Header } from './components/ui/Header';
 
 export default function Employee() {
   const navigate = useNavigate();
@@ -76,6 +77,10 @@ export default function Employee() {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const formData = new FormData();
+      formData.append('phone', phone);
+      if (photoFile) formData.append('photo', photoFile);
+
       // Password Validation if user intends to change password
       if (currentPassword || newPassword || confirmPassword) {
         if (!currentPassword || !newPassword || !confirmPassword) {
@@ -86,24 +91,9 @@ export default function Employee() {
           alert('Kata sandi baru dan konfirmasi kata sandi tidak cocok!');
           return;
         }
-        
-        // Update password first
-        const passRes = await apiFetch('/employee/change-password', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ currentPassword, newPassword }),
-        });
-        
-        if (!passRes.ok) {
-          const passError = await passRes.json();
-          throw new Error(passError.message || 'Gagal mengubah kata sandi');
-        }
+        formData.append('currentPassword', currentPassword);
+        formData.append('newPassword', newPassword);
       }
-
-      // Update basic profile
-      const formData = new FormData();
-      formData.append('phone', phone);
-      if (photoFile) formData.append('photo', photoFile);
 
       const res = await apiFetch('/employee/profile', {
         method: 'PUT',
@@ -123,7 +113,8 @@ export default function Employee() {
         setIsEditingProfile(false);
         alert('Profil Berhasil Diperbarui!');
       } else {
-        throw new Error('Update profile failed');
+        const errObj = await res.json();
+        throw new Error(errObj.message || 'Update profile failed');
       }
     } catch (error: any) {
       alert(`Gagal menyimpan perubahan: ${error.message || 'Error tidak diketahui'}`);
@@ -149,24 +140,8 @@ export default function Employee() {
   };
 
   return (
-    <div className="container" style={{ padding: 'var(--sp-4) var(--sp-3)', maxWidth: '1200px' }}>
-      {/* Top Bar */}
-      <div className="flex justify-between items-center gap-3 flex-wrap" style={{ 
-        marginBottom: 'var(--sp-4)', 
-        background: 'var(--surface-raised)',
-        padding: 'var(--sp-2) var(--sp-3)',
-        borderRadius: 'var(--radius-md)',
-        border: '1px solid var(--border-default)'
-      }}>
-        <div className="flex items-center gap-3">
-          {/* Logo Placeholder */}
-          <div style={{ width: '36px', height: '36px', background: 'var(--stone)', borderRadius: '50%', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '18px' }}>
-            D
-          </div>
-          <h2 style={{ margin: 0, fontSize: '18px' }}>Karyawan: {user.name}</h2>
-        </div>
-        <Button variant="destructive" onClick={() => { localStorage.clear(); navigate('/login') }}>Logout</Button>
-      </div>
+    <div className="container">
+      <Header userName={user.name} />
       
       {/* Grid Layout */}
       <div className="dashboard-grid">
@@ -193,7 +168,7 @@ export default function Employee() {
                 <p style={{ margin: 0, fontSize: '14px' }}>{user.phone || '-'}</p>
               </div>
               
-              <Button fullWidth variant="primary" style={{ background: '#2563EB', borderColor: '#2563EB', color: 'white' }} onClick={() => setIsEditingProfile(true)}>Edit Profil</Button>
+              <Button fullWidth variant="primary" onClick={() => setIsEditingProfile(true)}>Edit Profil</Button>
             </div>
           </Card>
         </div>
@@ -205,7 +180,8 @@ export default function Employee() {
             <h3 style={{ marginBottom: 'var(--sp-4)' }}>Absensi Hari Ini</h3>
             <div className="flex gap-3 flex-wrap" style={{ marginBottom: 'var(--sp-3)' }}>
               <Button 
-                style={{ flex: 1, padding: 'var(--sp-3)', fontSize: '16px', background: 'var(--success)', color: 'white', border: 'none' }} 
+                variant="success"
+                style={{ flex: 1, padding: 'var(--sp-3)', fontSize: '16px', border: 'none' }} 
                 onClick={() => handleAttendance('clock-in')}
               >
                 Clock In

@@ -1,6 +1,6 @@
 import React from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'success';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -70,6 +70,12 @@ export const Button: React.FC<ButtonProps> = ({
         color: '#FFFFFF',
       };
       break;
+    case 'success':
+      variantStyle = {
+        backgroundColor: 'var(--success)',
+        color: '#FFFFFF',
+      };
+      break;
   }
 
   // To properly handle hover in plain React without external CSS libraries,
@@ -83,6 +89,7 @@ export const Button: React.FC<ButtonProps> = ({
     if (variant === 'secondary') hoverStyle = { backgroundColor: 'var(--surface-sunken)' };
     if (variant === 'ghost') hoverStyle = { color: 'var(--stone)' };
     if (variant === 'destructive') hoverStyle = { backgroundColor: 'var(--error-hover)' };
+    if (variant === 'success') hoverStyle = { backgroundColor: 'var(--success)' }; // You can define --success-hover if needed, but for now just keep it or slightly alter
   }
 
   return (

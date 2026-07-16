@@ -12,26 +12,15 @@ export class EmployeeController {
   @UseInterceptors(FileInterceptor('photo'))
   async updateProfile(
     @Req() req: any,
-    @Body() body: { phone: string },
+    @Body() body: any,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.employeeService.updateProfile(req.user.userId, {
-      phone: body.phone,
-    }, file);
+    return this.employeeService.updateProfile(req.user.userId, body, file);
   }
 
   @Get('profile')
   async getProfile(@Req() req: any) {
     return this.employeeService.getProfile(req.user.userId);
-  }
-
-  @Put('change-password')
-  async changePassword(@Req() req: any, @Body() body: any) {
-    return this.employeeService.changePassword(
-      req.user.userId,
-      body.currentPassword,
-      body.newPassword,
-    );
   }
 
   @Get('attendance/history')
