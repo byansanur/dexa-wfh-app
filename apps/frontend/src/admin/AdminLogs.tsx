@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import Pagination from './components/Pagination';
 import { apiFetch } from '../utils/api';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 
 const socket = io(`${import.meta.env.VITE_API_URL}`);
 
@@ -82,7 +84,7 @@ export default function AdminLogs() {
       <h1 style={{ color: 'var(--primary)', marginBottom: '2rem' }}>MongoDB Audit Logs</h1>
 
       <div className="responsive-grid-1-1">
-        <div className="card">
+        <Card>
           <h2>Profile Updates</h2>
           <div className="table-container" style={{ maxHeight: '600px', overflowY: 'auto' }}>
             <table>
@@ -102,13 +104,13 @@ export default function AdminLogs() {
                       <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{log.userId.split('-')[0]}...</span>
                     </td>
                     <td>
-                      <button 
-                        className="btn btn-primary" 
-                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
                         onClick={() => setSelectedLog(log)}
                       >
                         Lihat Detail
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -116,9 +118,9 @@ export default function AdminLogs() {
             </table>
           </div>
           <Pagination page={profilePage} totalPages={profileTotalPages} onPageChange={setProfilePage} />
-        </div>
+        </Card>
 
-        <div className="card">
+        <Card>
           <h2>Attendance</h2>
           <div className="table-container" style={{ maxHeight: '600px', overflowY: 'auto' }}>
             <table>
@@ -138,15 +140,15 @@ export default function AdminLogs() {
             </table>
           </div>
           <Pagination page={attendancePage} totalPages={attendanceTotalPages} onPageChange={setAttendancePage} />
-        </div>
+        </Card>
       </div>
 
       {/* Modal Popup Detail Perubahan */}
       {selectedLog && (
         <div className="modal-overlay" onClick={() => setSelectedLog(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <Card elevated onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '500px', position: 'relative' }}>
             <button className="close-btn" onClick={() => setSelectedLog(null)}>&times;</button>
-            <h2 style={{ marginTop: 0, color: 'var(--primary)', marginBottom: '1.5rem' }}>Detail Perubahan Profil</h2>
+            <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Detail Perubahan Profil</h2>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '1.1rem' }}>
               <div>
@@ -185,8 +187,8 @@ export default function AdminLogs() {
               </div>
             </div>
             
-            <button className="btn btn-primary" style={{ marginTop: '2rem' }} onClick={() => setSelectedLog(null)}>Tutup</button>
-          </div>
+            <Button variant="primary" style={{ marginTop: '2rem' }} onClick={() => setSelectedLog(null)}>Tutup</Button>
+          </Card>
         </div>
       )}
     </div>

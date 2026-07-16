@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
+import { Button } from '../components/ui/Button';
 
 const socket = io(`${import.meta.env.VITE_API_URL}`);
 
@@ -76,13 +77,14 @@ export default function AdminLayout() {
 
         <div style={{ flex: 1 }}></div>
 
-        <button 
-          className="btn btn-danger" 
-          style={{ width: '100%', marginTop: 'auto' }} 
+        <Button 
+          variant="destructive" 
+          fullWidth
+          style={{ marginTop: 'auto' }} 
           onClick={handleLogout}
         >
           Logout
-        </button>
+        </Button>
       </div>
 
       {/* Main Content Area */}

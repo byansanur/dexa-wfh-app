@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import Pagination from './components/Pagination';
 import { apiFetch } from '../utils/api';
+import { Card } from '../components/ui/Card';
+import { Chip } from '../components/ui/Chip';
+import { Input } from '../components/ui/Input';
 
 const socket = io(`${import.meta.env.VITE_API_URL}`);
 
@@ -78,29 +81,29 @@ export default function AdminDashboard() {
       <h1 style={{ color: 'var(--primary)', marginBottom: '2rem' }}>Dasbor Utama</h1>
 
       {/* Stats Widgets */}
-      <div className="dashboard-grid" style={{ marginBottom: '2rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+      <div className="dashboard-grid" style={{ marginBottom: 'var(--sp-4)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--sp-3)' }}>
         
         {/* Widget 1: Total Employees */}
-        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div style={{ fontSize: '3rem', background: '#e0e7ff', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>👥</div>
+        <Card style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
+          <div style={{ fontSize: '32px', background: 'var(--surface-sunken)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>👥</div>
           <div>
-            <div style={{ color: '#64748b', fontSize: '1.1rem', fontWeight: 500 }}>Total Karyawan</div>
-            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-color)' }}>{stats.totalEmployees}</div>
+            <div className="text-secondary" style={{ fontSize: '13px', fontWeight: 500 }}>Total Karyawan</div>
+            <div style={{ fontSize: '32px', fontWeight: 300, color: 'var(--stone)' }}>{stats.totalEmployees}</div>
           </div>
-        </div>
+        </Card>
 
         {/* Widget 2: Absent Today */}
-        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div style={{ fontSize: '3rem', background: '#fee2e2', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>⚠️</div>
+        <Card style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
+          <div style={{ fontSize: '32px', background: 'rgba(220, 38, 38, 0.08)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>⚠️</div>
           <div>
-            <div style={{ color: '#64748b', fontSize: '1.1rem', fontWeight: 500 }}>Belum Hadir Hari Ini</div>
-            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--danger)' }}>{stats.absentToday}</div>
+            <div className="text-secondary" style={{ fontSize: '13px', fontWeight: 500 }}>Belum Hadir Hari Ini</div>
+            <div style={{ fontSize: '32px', fontWeight: 300, color: 'var(--error)' }}>{stats.absentToday}</div>
           </div>
-        </div>
+        </Card>
 
         {/* Widget 3: Top 3 Punctual */}
-        <div className="card" style={{ padding: '1rem 1.5rem' }}>
-          <div style={{ color: '#64748b', fontSize: '1.1rem', fontWeight: 500, marginBottom: '1rem' }}>Top 3 Hadir Paling Awal 🏆</div>
+        <Card style={{ padding: 'var(--sp-3) var(--sp-4)' }}>
+          <div className="text-secondary" style={{ fontSize: '13px', fontWeight: 500, marginBottom: 'var(--sp-2)' }}>Top 3 Hadir Paling Awal 🏆</div>
           {stats.topPunctual.length === 0 ? (
             <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Belum ada karyawan yang hadir hari ini.</div>
           ) : (
@@ -115,25 +118,25 @@ export default function AdminDashboard() {
               ))}
             </div>
           )}
-        </div>
+        </Card>
       </div>
 
       {/* Live Status Table */}
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem', marginBottom: '1rem' }}>
-          <h2 style={{ borderBottom: 'none', paddingBottom: 0, margin: 0 }}>Daftar Karyawan (Live Status)</h2>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', width: '100%' }}>
-            <input 
+      <Card>
+        <div className="flex justify-between items-center gap-3" style={{ borderBottom: '1px solid var(--border-default)', paddingBottom: 'var(--sp-2)', marginBottom: 'var(--sp-2)', flexWrap: 'wrap' }}>
+          <h2 style={{ margin: 0 }}>Daftar Karyawan (Live Status)</h2>
+          <div className="flex gap-2 items-center" style={{ flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
+            <Input 
               type="text" 
               placeholder="Cari Nama / Email..." 
               value={searchQuery}
               onChange={handleSearchChange}
-              style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1', flex: '1 1 200px' }}
+              containerStyle={{ marginBottom: 0, flex: '1 1 200px', maxWidth: '300px' }}
             />
             <select 
               value={statusFilter} 
               onChange={handleStatusChange}
-              style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: 'white', flex: '1 1 150px' }}
+              style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', backgroundColor: 'var(--surface-sunken)', flex: '1 1 150px', maxWidth: '200px', fontSize: '15px' }}
             >
               <option value="ALL_ATTENDED">Semua Hadir (Hari Ini)</option>
               <option value="PRESENT">Sedang Bekerja (Aktif)</option>
@@ -169,9 +172,12 @@ export default function AdminDashboard() {
                   <td>{emp.clockIn ? new Date(emp.clockIn).toLocaleTimeString() : '-'}</td>
                   <td>{emp.clockOut ? new Date(emp.clockOut).toLocaleTimeString() : '-'}</td>
                   <td>
-                    <span className={`status-badge ${!emp.clockIn ? 'status-absent' : emp.clockOut ? 'status-completed' : 'status-present'}`}>
+                    <Chip 
+                      type="status" 
+                      status={!emp.clockIn ? 'absent' : emp.clockOut ? 'completed' : 'present'}
+                    >
                       {!emp.clockIn ? 'Absent' : emp.clockOut ? 'Completed' : 'Present'}
-                    </span>
+                    </Chip>
                   </td>
                 </tr>
               ))}
@@ -184,7 +190,7 @@ export default function AdminDashboard() {
           </table>
         </div>
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-      </div>
+      </Card>
     </div>
   );
 }

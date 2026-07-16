@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import Pagination from './components/Pagination';
 import { apiFetch } from '../utils/api';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 const socket = io(`${import.meta.env.VITE_API_URL}`);
 
@@ -104,59 +107,72 @@ export default function AdminEmployees() {
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
       <h1 style={{ color: 'var(--primary)', marginBottom: '2rem' }}>Manajemen Karyawan</h1>
 
-      <div className="responsive-grid-1-1" style={{ marginBottom: '2rem' }}>
+      <div className="responsive-grid-1-1" style={{ marginBottom: 'var(--sp-4)' }}>
         {/* Card 1: Tambah Single */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+        <Card style={{ display: 'flex', flexDirection: 'column' }}>
           <h2 style={{ marginTop: 0 }}>Tambah Karyawan (Single)</h2>
           <form onSubmit={handleAddEmployee} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-            <div className="form-group">
-                <label>Email</label>
-                <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label>Nama</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label>Tipe Absensi</label>
-                <select value={attendanceType} onChange={e => setAttendanceType(e.target.value)}>
-                  <option value="SINGLE">Single-Shift (1x per Hari)</option>
-                  <option value="MULTI">Multi-Shift (Lebih dari 1x)</option>
-                </select>
-              </div>
-              <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: 'auto' }}>Simpan Karyawan</button>
+            <Input 
+              label="Email"
+              type="email" 
+              value={email} 
+              onChange={e => setEmail(e.target.value)} 
+              required 
+            />
+            <Input 
+              label="Nama Lengkap"
+              type="text" 
+              value={name} 
+              onChange={e => setName(e.target.value)} 
+              required 
+            />
+            <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginBottom: '1rem' }}>
+              <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--sage)', marginBottom: '6px' }}>Tipe Absensi</label>
+              <select 
+                value={attendanceType} 
+                onChange={e => setAttendanceType(e.target.value)}
+                style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', backgroundColor: 'var(--surface-sunken)', width: '100%', fontSize: '15px' }}
+              >
+                <option value="SINGLE">Single-Shift (1x per Hari)</option>
+                <option value="MULTI">Multi-Shift (Lebih dari 1x)</option>
+              </select>
+            </div>
+            <Button type="submit" variant="primary" style={{ marginTop: 'auto' }}>Simpan Karyawan</Button>
           </form>
-        </div>
+        </Card>
 
         {/* Card 2: Bulk Upload */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+        <Card style={{ display: 'flex', flexDirection: 'column' }}>
           <h2 style={{ marginTop: 0 }}>Bulk Upload (CSV)</h2>
-          <p className="helper-text" style={{ marginBottom: '1.5rem' }}>Unggah file CSV untuk mengimpor banyak karyawan sekaligus secara instan.</p>
-          <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#64748b' }}>Format Header CSV:</span><br/>
-            <code style={{ fontSize: '0.9rem', color: 'var(--primary)' }}>email,name,attendanceType</code>
+          <p className="text-secondary" style={{ marginBottom: '1.5rem' }}>Unggah file CSV untuk mengimpor banyak karyawan sekaligus secara instan.</p>
+          <div style={{ background: 'var(--surface-sunken)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
+            <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--sage)' }}>Format Header CSV:</span><br/>
+            <code style={{ fontSize: '13px', color: 'var(--stone)' }}>email,name,attendanceType</code>
           </div>
           <form onSubmit={handleBulkUpload} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-            <div className="form-group">
-              <label>Pilih File CSV</label>
-              <input type="file" accept=".csv" onChange={e => setCsvFile(e.target.files?.[0] || null)} required />
-            </div>
-            <button className="btn btn-success" type="submit" style={{ width: '100%', marginTop: 'auto' }}>Import CSV Sekarang</button>
+            <Input 
+              label="Pilih File CSV"
+              type="file" 
+              accept=".csv" 
+              onChange={e => setCsvFile(e.target.files?.[0] || null)} 
+              required 
+            />
+            <Button variant="primary" type="submit" style={{ marginTop: 'auto' }}>Import CSV Sekarang</Button>
           </form>
-        </div>
+        </Card>
       </div>
 
       {/* Card Tabel Karyawan di bawah */}
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem', marginBottom: '1rem' }}>
+      <Card>
+        <div className="flex justify-between items-center gap-3" style={{ borderBottom: '1px solid var(--border-default)', paddingBottom: 'var(--sp-2)', marginBottom: 'var(--sp-2)', flexWrap: 'wrap' }}>
           <h2 style={{ borderBottom: 'none', paddingBottom: 0, margin: 0 }}>Daftar Karyawan Terdaftar</h2>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', width: '100%' }}>
-            <input 
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', width: '100%', maxWidth: '300px' }}>
+            <Input 
               type="text" 
               placeholder="Cari Nama / Email..." 
               value={searchQuery}
               onChange={handleSearchChange}
-              style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1', maxWidth: '300px' }}
+              containerStyle={{ marginBottom: 0 }}
             />
           </div>
         </div>
@@ -183,13 +199,13 @@ export default function AdminEmployees() {
                   <td>{emp.phone || '-'}</td>
                   <td>{emp.attendanceType === 'MULTI' ? 'Multi-Shift' : 'Single-Shift'}</td>
                   <td>
-                    <button 
-                      className="btn btn-primary" 
-                      style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', width: 'auto' }}
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
                       onClick={() => handleEditClick(emp)}
                     >
                       Edit
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -202,45 +218,40 @@ export default function AdminEmployees() {
           </table>
         </div>
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-      </div>
+      </Card>
 
       {/* Edit Employee Modal */}
       {editingEmployee && (
         <div className="modal-overlay" onClick={() => setEditingEmployee(null)}>
-          <div className="modal-content card" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '500px', margin: '2rem' }}>
+          <Card elevated onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '500px', margin: 'var(--sp-4)' }}>
             <h2 style={{ marginTop: 0 }}>Edit Karyawan</h2>
             <form onSubmit={handleEditSubmit}>
-              <div className="form-group">
-                <label>Email</label>
-                <input 
-                  type="email" 
-                  value={editingEmployee.email} 
-                  onChange={e => setEditingEmployee({...editingEmployee, email: e.target.value})} 
-                  required 
-                />
-              </div>
-              <div className="form-group">
-                <label>Nama Lengkap</label>
-                <input 
-                  type="text" 
-                  value={editingEmployee.name} 
-                  onChange={e => setEditingEmployee({...editingEmployee, name: e.target.value})} 
-                  required 
-                />
-              </div>
-              <div className="form-group">
-                <label>Nomor HP</label>
-                <input 
-                  type="text" 
-                  value={editingEmployee.phone || ''} 
-                  onChange={e => setEditingEmployee({...editingEmployee, phone: e.target.value})} 
-                />
-              </div>
-              <div className="form-group">
-                <label>Tipe Absensi</label>
+              <Input 
+                label="Email"
+                type="email" 
+                value={editingEmployee.email} 
+                onChange={e => setEditingEmployee({...editingEmployee, email: e.target.value})} 
+                required 
+              />
+              <Input 
+                label="Nama Lengkap"
+                type="text" 
+                value={editingEmployee.name} 
+                onChange={e => setEditingEmployee({...editingEmployee, name: e.target.value})} 
+                required 
+              />
+              <Input 
+                label="Nomor HP"
+                type="text" 
+                value={editingEmployee.phone || ''} 
+                onChange={e => setEditingEmployee({...editingEmployee, phone: e.target.value})} 
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginBottom: '1rem' }}>
+                <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--sage)', marginBottom: '6px' }}>Tipe Absensi</label>
                 <select 
                   value={editingEmployee.attendanceType} 
                   onChange={e => setEditingEmployee({...editingEmployee, attendanceType: e.target.value})}
+                  style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', backgroundColor: 'var(--surface-sunken)', width: '100%', fontSize: '15px' }}
                 >
                   <option value="SINGLE">Single-Shift (1x per Hari)</option>
                   <option value="MULTI">Multi-Shift (Lebih dari 1x)</option>
@@ -248,11 +259,11 @@ export default function AdminEmployees() {
               </div>
               
               <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-                <button type="button" className="btn btn-danger" onClick={() => setEditingEmployee(null)}>Batal</button>
-                <button type="submit" className="btn btn-success">Simpan Perubahan</button>
+                <Button type="button" variant="ghost" onClick={() => setEditingEmployee(null)}>Batal</Button>
+                <Button type="submit" variant="primary">Simpan Perubahan</Button>
               </div>
             </form>
-          </div>
+          </Card>
         </div>
       )}
     </div>

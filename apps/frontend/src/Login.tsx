@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from './utils/api';
+import { Card } from './components/ui/Card';
+import { Input } from './components/ui/Input';
+import { Button } from './components/ui/Button';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -31,18 +34,26 @@ export default function Login() {
 
   return (
     <div className="container" style={{ maxWidth: '400px', marginTop: '100px' }}>
-      <div className="card">
-        <h2>Masuk ke Portal WFH</h2>
+      <Card>
+        <h2 style={{ textAlign: 'center', marginBottom: 'var(--sp-4)' }}>Masuk ke Portal WFH</h2>
         <form onSubmit={handleLogin}>
-          <div className="form-group">
-            <label>Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label>Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </div>
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>Sign In</button>
+          <Input 
+            label="Email Address"
+            type="email" 
+            value={email} 
+            onChange={e => setEmail(e.target.value)} 
+            required 
+          />
+          <Input 
+            label="Password"
+            type="password" 
+            value={password} 
+            onChange={e => setPassword(e.target.value)} 
+            required 
+          />
+          <Button type="submit" fullWidth style={{ marginTop: 'var(--sp-2)' }}>
+            Log In
+          </Button>
         </form>
         <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666', textAlign: 'center' }}>
           <em>Default password untuk user baru: <strong>wfh123</strong></em>
@@ -51,7 +62,7 @@ export default function Login() {
           *Admin: admin@dexa.com / admin123<br/>
           *Karyawan: employee@dexa.com / employee123
         </p>
-      </div>
+      </Card>
     </div>
   );
 }

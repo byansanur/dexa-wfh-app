@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { apiFetch } from './utils/api';
 import { useNavigate } from 'react-router-dom';
+import { Card } from './components/ui/Card';
+import { Button } from './components/ui/Button';
+import { Input } from './components/ui/Input';
 
 export default function Employee() {
   const navigate = useNavigate();
@@ -91,41 +94,45 @@ export default function Employee() {
 
   return (
     <div className="container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
-        <h1 style={{ color: 'var(--primary)' }}>Karyawan: {user.name}</h1>
-        <button className="btn btn-danger" style={{ width: 'auto' }} onClick={() => { localStorage.clear(); navigate('/login') }}>Logout</button>
+      <div className="flex justify-between items-center" style={{ marginBottom: 'var(--sp-4)' }}>
+        <h1>Karyawan: {user.name}</h1>
+        <Button variant="destructive" onClick={() => { localStorage.clear(); navigate('/login') }}>Logout</Button>
       </div>
       
       <div className="dashboard-grid">
-        <div className="card">
+        <Card>
           <h2>Absensi Harian</h2>
-          <div className="btn-group">
-            <button className="btn btn-success" onClick={() => handleAttendance('clock-in')}>Clock In</button>
-            <button className="btn btn-danger" onClick={() => handleAttendance('clock-out')}>Clock Out</button>
+          <div className="flex gap-2" style={{ marginBottom: 'var(--sp-4)' }}>
+            <Button variant="primary" onClick={() => handleAttendance('clock-in')}>Clock In</Button>
+            <Button variant="destructive" onClick={() => handleAttendance('clock-out')}>Clock Out</Button>
           </div>
           
-          <h2 style={{ marginTop: '2rem' }}>Update Profil</h2>
+          <h2>Update Profil</h2>
           <form onSubmit={handleUpdateProfile}>
-            <div className="form-group">
-              <label>Nomor Telepon</label>
-              <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Ganti Foto (MinIO)</label>
-              <input type="file" accept="image/*" onChange={(e) => setPhotoFile(e.target.files?.[0] || null)} />
-            </div>
-            <button className="btn" type="submit">Simpan Profil</button>
+            <Input 
+              label="Nomor Telepon"
+              type="text" 
+              value={phone} 
+              onChange={(e) => setPhone(e.target.value)} 
+            />
+            <Input 
+              label="Ganti Foto (MinIO)"
+              type="file" 
+              accept="image/*" 
+              onChange={(e) => setPhotoFile(e.target.files?.[0] || null)} 
+            />
+            <Button type="submit">Simpan Profil</Button>
           </form>
-        </div>
+        </Card>
 
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem', marginBottom: '1rem' }}>
-            <h2 style={{ borderBottom: 'none', paddingBottom: 0, margin: 0 }}>Riwayat Absensi Anda</h2>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
-              <input type="date" max={getToday()} value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+        <Card>
+          <div className="flex justify-between items-center" style={{ marginBottom: 'var(--sp-3)' }}>
+            <h2 style={{ margin: 0 }}>Riwayat Absensi Anda</h2>
+            <div className="flex gap-2 items-center">
+              <Input type="date" max={getToday()} value={startDate} onChange={e => setStartDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
               <span>-</span>
-              <input type="date" max={getToday()} value={endDate} onChange={e => setEndDate(e.target.value)} style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-              <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', width: 'auto' }} onClick={fetchHistory}>Filter</button>
+              <Input type="date" max={getToday()} value={endDate} onChange={e => setEndDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
+              <Button onClick={fetchHistory} style={{ height: '44px' }}>Filter</Button>
             </div>
           </div>
           <div className="table-container">
@@ -148,7 +155,7 @@ export default function Employee() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
