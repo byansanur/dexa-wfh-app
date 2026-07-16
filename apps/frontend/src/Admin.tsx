@@ -20,6 +20,26 @@ export default function Admin() {
   
   const [selectedLog, setSelectedLog] = useState<any>(null);
 
+  // Filter States (Live Status)
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+
+  // Date Helpers
+  const getFirstDayOfMonth = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+  };
+  const getToday = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
+
+  // Filter States (Report)
+  const [reportStartDate, setReportStartDate] = useState(getFirstDayOfMonth());
+  const [reportEndDate, setReportEndDate] = useState(getToday());
+  const [reportData, setReportData] = useState<any[]>([]);
+  const [reportSearchQuery, setReportSearchQuery] = useState('');
+
   useEffect(() => {
     if (!token || user.role !== 'ADMIN') {
       navigate('/login');
@@ -28,6 +48,7 @@ export default function Admin() {
     
     fetchEmployees();
     fetchLogs();
+    fetchReport();
 
     socket.on('connect', () => console.log('WS Admin Connected'));
     socket.on('ProfileUpdated', () => { 
@@ -59,6 +80,17 @@ export default function Admin() {
     if(resA.ok) setAuditAttendance(await resA.json());
   };
 
+  const fetchReport = async () => {
+    let url = 'http://localhost:3000/admin/reports/attendance';
+    const params = new URLSearchParams();
+    if (reportStartDate) params.append('startDate', reportStartDate);
+    if (reportEndDate) params.append('endDate', reportEndDate);
+    if (params.toString()) url += `?${params.toString()}`;
+    
+    const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+    if (res.ok) setReportData(await res.json());
+  };
+
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     await fetch('http://localhost:3000/admin/employee', {
@@ -84,6 +116,29 @@ export default function Admin() {
     alert('Bulk Import Sukses!');
     fetchEmployees();
   };
+
+  // Filter Logic
+  const filteredEmployees = employees.filter(emp => {
+    const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          emp.email.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    let matchesStatus = true;
+    if (statusFilter === 'PRESENT') matchesStatus = emp.clockIn && !emp.clockOut;
+    else if (statusFilter === 'COMPLETED') matchesStatus = emp.clockIn && emp.clockOut;
+    else if (statusFilter === 'ABSENT') matchesStatus = !emp.clockIn;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const filteredReport = reportData.filter(r => {
+    if (!reportSearchQuery) return true;
+    const q = reportSearchQuery.toLowerCase();
+    return (
+      r.name?.toLowerCase().includes(q) ||
+      r.email?.toLowerCase().includes(q) ||
+      r.attendanceType?.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="container" style={{ maxWidth: '1400px' }}>
@@ -123,7 +178,28 @@ export default function Admin() {
         </div>
 
         <div className="card">
-          <h2>Daftar Karyawan (Live Status)</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem', marginBottom: '1rem' }}>
+            <h2 style={{ borderBottom: 'none', paddingBottom: 0, margin: 0 }}>Daftar Karyawan (Live Status)</h2>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <input 
+                type="text" 
+                placeholder="Cari Nama / Email..." 
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              />
+              <select 
+                value={statusFilter} 
+                onChange={e => setStatusFilter(e.target.value)}
+                style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: 'white' }}
+              >
+                <option value="ALL">Semua Status</option>
+                <option value="PRESENT">Hadir (Sesi Aktif)</option>
+                <option value="COMPLETED">Selesai (Pulang)</option>
+                <option value="ABSENT">Belum Hadir</option>
+              </select>
+            </div>
+          </div>
           <div className="table-container">
             <table>
               <thead>
@@ -139,7 +215,7 @@ export default function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {employees.map(emp => (
+                {filteredEmployees.map(emp => (
                   <tr key={emp.id}>
                     <td>
                       <img src={emp.photoUrl || 'https://ui-avatars.com/api/?name=' + emp.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} alt="" />
@@ -162,7 +238,60 @@ export default function Admin() {
           </div>
         </div>
       </div>
-
+      <div className="card" style={{ marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem', marginBottom: '1rem' }}>
+          <h2 style={{ borderBottom: 'none', paddingBottom: 0, margin: 0 }}>Laporan Riwayat Absensi (Agregat)</h2>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.85rem', color: '#64748b' }}>Dari:</label>
+              <input type="date" max={getToday()} value={reportStartDate} onChange={e => setReportStartDate(e.target.value)} style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.85rem', color: '#64748b' }}>Sampai:</label>
+              <input type="date" max={getToday()} value={reportEndDate} onChange={e => setReportEndDate(e.target.value)} style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+            </div>
+            <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', width: 'auto' }} onClick={fetchReport}>Terapkan Filter</button>
+            <input 
+              type="text" 
+              placeholder="Pencarian Global (Nama, Email)..." 
+              value={reportSearchQuery}
+              onChange={e => setReportSearchQuery(e.target.value)}
+              style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1', minWidth: '250px' }}
+            />
+          </div>
+        </div>
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Nama Karyawan</th>
+                <th>Email</th>
+                <th>Tipe Absen</th>
+                <th>Jam Masuk</th>
+                <th>Jam Keluar</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredReport.map(r => (
+                <tr key={r.id}>
+                  <td><strong>{new Date(r.date).toLocaleDateString()}</strong></td>
+                  <td>{r.name}</td>
+                  <td>{r.email}</td>
+                  <td>{r.attendanceType === 'MULTI' ? 'Multi-Shift' : 'Single-Shift'}</td>
+                  <td>{r.clockIn ? new Date(r.clockIn).toLocaleTimeString() : '-'}</td>
+                  <td>{r.clockOut ? new Date(r.clockOut).toLocaleTimeString() : '-'}</td>
+                </tr>
+              ))}
+              {filteredReport.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>Tidak ada riwayat absensi yang ditemukan.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
         <div className="card">
           <h2>MongoDB Audit Logs: Profile Updates</h2>

@@ -10,6 +10,18 @@ export default function Employee() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [history, setHistory] = useState<any[]>([]);
 
+  const getFirstDayOfMonth = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+  };
+  const getToday = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
+
+  const [startDate, setStartDate] = useState(getFirstDayOfMonth());
+  const [endDate, setEndDate] = useState(getToday());
+
   useEffect(() => {
     if (!token || user.role !== 'EMPLOYEE') {
       navigate('/login');
@@ -20,7 +32,13 @@ export default function Employee() {
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch('http://localhost:3000/attendance/history', {
+      let url = 'http://localhost:3000/employee/attendance/history';
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+      if (params.toString()) url += `?${params.toString()}`;
+
+      const res = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -104,7 +122,15 @@ export default function Employee() {
         </div>
 
         <div className="card">
-          <h2>Riwayat Absensi Anda</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem', marginBottom: '1rem' }}>
+            <h2 style={{ borderBottom: 'none', paddingBottom: 0, margin: 0 }}>Riwayat Absensi Anda</h2>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <input type="date" max={getToday()} value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+              <span>-</span>
+              <input type="date" max={getToday()} value={endDate} onChange={e => setEndDate(e.target.value)} style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+              <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', width: 'auto' }} onClick={fetchHistory}>Filter</button>
+            </div>
+          </div>
           <div className="table-container">
             <table>
               <thead>
