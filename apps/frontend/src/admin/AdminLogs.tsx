@@ -33,9 +33,9 @@ export default function AdminLogs() {
     if (token) fetchAttendanceLogs();
   }, [token, attendancePage]);
 
-  const fetchEmployeesRef = useRef(fetchEmployees);
-  const fetchProfileLogsRef = useRef(fetchProfileLogs);
-  const fetchAttendanceLogsRef = useRef(fetchAttendanceLogs);
+  const fetchEmployeesRef = useRef<any>(null);
+  const fetchProfileLogsRef = useRef<any>(null);
+  const fetchAttendanceLogsRef = useRef<any>(null);
 
   useEffect(() => {
     fetchEmployeesRef.current = fetchEmployees;
@@ -47,13 +47,13 @@ export default function AdminLogs() {
     socket.on('connect', () => console.log('WS AdminLogs Connected'));
     
     const handleProfileUpdate = () => {
-      fetchEmployeesRef.current();
-      setTimeout(() => fetchProfileLogsRef.current(), 500);
+      if (fetchEmployeesRef.current) fetchEmployeesRef.current();
+      setTimeout(() => { if (fetchProfileLogsRef.current) fetchProfileLogsRef.current(); }, 500);
     };
 
     const handleAttendanceUpdate = () => {
-      fetchEmployeesRef.current();
-      setTimeout(() => fetchAttendanceLogsRef.current(), 500);
+      if (fetchEmployeesRef.current) fetchEmployeesRef.current();
+      setTimeout(() => { if (fetchAttendanceLogsRef.current) fetchAttendanceLogsRef.current(); }, 500);
     };
 
     socket.on('ProfileUpdated', handleProfileUpdate);

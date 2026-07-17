@@ -32,8 +32,8 @@ export default function AdminDashboard() {
     }
   }, [token, page, searchQuery, statusFilter]);
 
-  const fetchStatsRef = useRef(fetchStats);
-  const fetchEmployeesRef = useRef(fetchEmployees);
+  const fetchStatsRef = useRef<any>(null);
+  const fetchEmployeesRef = useRef<any>(null);
 
   useEffect(() => {
     fetchStatsRef.current = fetchStats;
@@ -44,8 +44,8 @@ export default function AdminDashboard() {
     socket.on('connect', () => console.log('WS AdminDashboard Connected'));
     
     const handleUpdate = () => {
-      fetchStatsRef.current();
-      fetchEmployeesRef.current();
+      if (fetchStatsRef.current) fetchStatsRef.current();
+      if (fetchEmployeesRef.current) fetchEmployeesRef.current();
     };
 
     socket.on('ProfileUpdated', handleUpdate);

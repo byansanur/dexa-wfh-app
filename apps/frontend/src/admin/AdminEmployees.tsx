@@ -28,14 +28,14 @@ export default function AdminEmployees() {
     if (token) fetchEmployees();
   }, [token, page, searchQuery]);
 
-  const fetchEmployeesRef = useRef(fetchEmployees);
+  const fetchEmployeesRef = useRef<any>(null);
   useEffect(() => {
     fetchEmployeesRef.current = fetchEmployees;
   });
 
   useEffect(() => {
     const handleUpdate = () => {
-      fetchEmployeesRef.current();
+      if (fetchEmployeesRef.current) fetchEmployeesRef.current();
     };
 
     socket.on('ProfileUpdated', handleUpdate);
