@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { socket } from '../utils/socket';
 import Pagination from './components/Pagination';
 import { apiFetch } from '../utils/api';
@@ -32,15 +32,29 @@ export default function AdminDashboard() {
     }
   }, [token, page, searchQuery, statusFilter]);
 
+  const fetchStatsRef = useRef(fetchStats);
+  const fetchEmployeesRef = useRef(fetchEmployees);
+
+  useEffect(() => {
+    fetchStatsRef.current = fetchStats;
+    fetchEmployeesRef.current = fetchEmployees;
+  });
+
   useEffect(() => {
     socket.on('connect', () => console.log('WS AdminDashboard Connected'));
-    socket.on('ProfileUpdated', () => { fetchStats(); fetchEmployees(); });
-    socket.on('AttendanceLogged', () => { fetchStats(); fetchEmployees(); });
+    
+    const handleUpdate = () => {
+      fetchStatsRef.current();
+      fetchEmployeesRef.current();
+    };
+
+    socket.on('ProfileUpdated', handleUpdate);
+    socket.on('AttendanceLogged', handleUpdate);
 
     return () => {
       socket.off('connect');
-      socket.off('ProfileUpdated');
-      socket.off('AttendanceLogged');
+      socket.off('ProfileUpdated', handleUpdate);
+      socket.off('AttendanceLogged', handleUpdate);
     };
   }, []);
 

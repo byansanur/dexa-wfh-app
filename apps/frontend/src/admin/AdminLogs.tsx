@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { socket } from '../utils/socket';
 import Pagination from './components/Pagination';
 import { apiFetch } from '../utils/api';
@@ -33,21 +33,36 @@ export default function AdminLogs() {
     if (token) fetchAttendanceLogs();
   }, [token, attendancePage]);
 
+  const fetchEmployeesRef = useRef(fetchEmployees);
+  const fetchProfileLogsRef = useRef(fetchProfileLogs);
+  const fetchAttendanceLogsRef = useRef(fetchAttendanceLogs);
+
+  useEffect(() => {
+    fetchEmployeesRef.current = fetchEmployees;
+    fetchProfileLogsRef.current = fetchProfileLogs;
+    fetchAttendanceLogsRef.current = fetchAttendanceLogs;
+  });
+
   useEffect(() => {
     socket.on('connect', () => console.log('WS AdminLogs Connected'));
-    socket.on('ProfileUpdated', () => { 
-      fetchEmployees(); 
-      setTimeout(() => fetchProfileLogs(), 500); 
-    });
-    socket.on('AttendanceLogged', () => { 
-      fetchEmployees(); 
-      setTimeout(() => fetchAttendanceLogs(), 500); 
-    });
+    
+    const handleProfileUpdate = () => {
+      fetchEmployeesRef.current();
+      setTimeout(() => fetchProfileLogsRef.current(), 500);
+    };
+
+    const handleAttendanceUpdate = () => {
+      fetchEmployeesRef.current();
+      setTimeout(() => fetchAttendanceLogsRef.current(), 500);
+    };
+
+    socket.on('ProfileUpdated', handleProfileUpdate);
+    socket.on('AttendanceLogged', handleAttendanceUpdate);
 
     return () => {
       socket.off('connect');
-      socket.off('ProfileUpdated');
-      socket.off('AttendanceLogged');
+      socket.off('ProfileUpdated', handleProfileUpdate);
+      socket.off('AttendanceLogged', handleAttendanceUpdate);
     };
   }, []);
 

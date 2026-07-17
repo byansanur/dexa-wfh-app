@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { socket } from '../utils/socket';
 import Pagination from './components/Pagination';
 import { apiFetch } from '../utils/api';
@@ -28,14 +28,23 @@ export default function AdminEmployees() {
     if (token) fetchEmployees();
   }, [token, page, searchQuery]);
 
+  const fetchEmployeesRef = useRef(fetchEmployees);
   useEffect(() => {
-    socket.on('ProfileUpdated', () => fetchEmployees());
-    socket.on('AttendanceLogged', () => fetchEmployees());
+    fetchEmployeesRef.current = fetchEmployees;
+  });
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      fetchEmployeesRef.current();
+    };
+
+    socket.on('ProfileUpdated', handleUpdate);
+    socket.on('AttendanceLogged', handleUpdate);
 
     return () => {
       socket.off('connect');
-      socket.off('ProfileUpdated');
-      socket.off('AttendanceLogged');
+      socket.off('ProfileUpdated', handleUpdate);
+      socket.off('AttendanceLogged', handleUpdate);
     };
   }, [token]);
 
@@ -154,7 +163,7 @@ export default function AdminEmployees() {
               label="Nomor HP"
               type="text" 
               value={phone} 
-              onChange={e => setPhone(e.target.value)} 
+              onChange={e => setPhone(e.target.value.replace(/[^0-9]/g, ''))} 
               pattern="^[0-9]{10,15}$"
               title="Nomor HP harus berupa angka dengan panjang 10 hingga 15 karakter."
             />
