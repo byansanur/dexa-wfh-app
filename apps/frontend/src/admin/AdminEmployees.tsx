@@ -12,6 +12,7 @@ export default function AdminEmployees() {
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [attendanceType, setAttendanceType] = useState('SINGLE');
   const [csvFile, setCsvFile] = useState<File | null>(null);
 
@@ -53,7 +54,7 @@ export default function AdminEmployees() {
     e.preventDefault();
     const res = await apiFetch('/admin/employee', {
       method: 'POST',
-      body: JSON.stringify({ email, name, attendanceType })
+      body: JSON.stringify({ email, name, phone, attendanceType })
     });
     
     if (!res.ok) {
@@ -63,7 +64,7 @@ export default function AdminEmployees() {
     }
 
     alert('Karyawan Berhasil Ditambahkan!');
-    setName(''); setEmail(''); setAttendanceType('SINGLE');
+    setName(''); setEmail(''); setPhone(''); setAttendanceType('SINGLE');
     fetchEmployees();
   };
 
@@ -145,6 +146,15 @@ export default function AdminEmployees() {
               value={name} 
               onChange={e => setName(e.target.value)} 
               required 
+              minLength={3}
+            />
+            <Input 
+              label="Nomor HP"
+              type="text" 
+              value={phone} 
+              onChange={e => setPhone(e.target.value)} 
+              pattern="^[0-9]{10,15}$"
+              title="Nomor HP harus berupa angka dengan panjang 10 hingga 15 karakter."
             />
             <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginBottom: '1rem' }}>
               <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--sage)', marginBottom: '6px' }}>Tipe Absensi</label>
@@ -259,12 +269,15 @@ export default function AdminEmployees() {
                 value={editingEmployee.name} 
                 onChange={e => setEditingEmployee({...editingEmployee, name: e.target.value})} 
                 required 
+                minLength={3}
               />
               <Input 
                 label="Nomor HP"
                 type="text" 
                 value={editingEmployee.phone || ''} 
                 onChange={e => setEditingEmployee({...editingEmployee, phone: e.target.value})} 
+                pattern="^[0-9]{10,15}$"
+                title="Nomor HP harus berupa angka dengan panjang 10 hingga 15 karakter."
               />
               <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginBottom: '1rem' }}>
                 <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--sage)', marginBottom: '6px' }}>Tipe Absensi</label>
