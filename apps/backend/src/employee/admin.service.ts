@@ -20,7 +20,16 @@ export class AdminService {
 
     const [totalEmployees, presentToday, topPunctual] = await Promise.all([
       this.prisma.user.count({ where: { role: 'EMPLOYEE' } }),
-      this.prisma.user.count({ where: { role: 'EMPLOYEE', Attendances: { some: { date: today } } } }),
+      this.prisma.user.count({ 
+        where: { 
+          role: 'EMPLOYEE', 
+          Attendances: { 
+            some: { 
+              OR: [ { clockOut: null }, { date: today } ] 
+            } 
+          } 
+        } 
+      }),
       this.prisma.attendance.findMany({
         where: { date: today },
         orderBy: { clockIn: 'asc' },
@@ -60,13 +69,13 @@ export class AdminService {
     }
 
     if (status === 'Hadir') {
-      where.Attendances = { some: { date: today, clockOut: null } };
+      where.Attendances = { some: { clockOut: null } };
     } else if (status === 'Selesai') {
       where.Attendances = { some: { date: today, clockOut: { not: null } } };
     } else if (status === 'Belum Absen') {
-      where.Attendances = { none: { date: today } };
+      where.Attendances = { none: { OR: [{ clockOut: null }, { date: today }] } };
     } else if (status === 'Semua Hadir') {
-      where.Attendances = { some: { date: today } };
+      where.Attendances = { some: { OR: [{ clockOut: null }, { date: today }] } };
     }
 
     const [employees, total] = await Promise.all([
