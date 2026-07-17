@@ -66,11 +66,11 @@ export default function AdminReports() {
           <div className="flex gap-2 items-center" style={{ flexWrap: 'wrap' }}>
             <div className="flex items-center gap-2">
               <label className="text-secondary" style={{ fontSize: '13px' }}>Dari:</label>
-              <Input type="date" max={getToday()} value={reportStartDate} onChange={e => setReportStartDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
+              <Input type="date" max={reportEndDate || getToday()} value={reportStartDate} onChange={e => setReportStartDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
             </div>
             <div className="flex items-center gap-2">
               <label className="text-secondary" style={{ fontSize: '13px' }}>Sampai:</label>
-              <Input type="date" max={getToday()} value={reportEndDate} onChange={e => setReportEndDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
+              <Input type="date" min={reportStartDate} max={getToday()} value={reportEndDate} onChange={e => setReportEndDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
               <select 
                 value={limit} 
                 onChange={e => { setLimit(Number(e.target.value)); setPage(1); }} 
