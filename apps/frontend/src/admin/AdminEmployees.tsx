@@ -51,10 +51,17 @@ export default function AdminEmployees() {
 
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
-    await apiFetch('/admin/employee', {
+    const res = await apiFetch('/admin/employee', {
       method: 'POST',
       body: JSON.stringify({ email, name, attendanceType })
     });
+    
+    if (!res.ok) {
+      const err = await res.json();
+      alert(`Gagal: ${err.message || 'Terjadi kesalahan'}`);
+      return;
+    }
+
     alert('Karyawan Berhasil Ditambahkan!');
     setName(''); setEmail(''); setAttendanceType('SINGLE');
     fetchEmployees();
@@ -65,11 +72,19 @@ export default function AdminEmployees() {
     if (!csvFile) return;
     const formData = new FormData();
     formData.append('file', csvFile);
-    await apiFetch('/admin/employee/bulk', {
+    const res = await apiFetch('/admin/employee/bulk', {
       method: 'POST',
       body: formData
     });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(`Gagal: ${err.message || 'Terjadi kesalahan impor'}`);
+      return;
+    }
+
     alert('Bulk Import Sukses!');
+    setCsvFile(null);
     fetchEmployees();
   };
 
@@ -86,7 +101,7 @@ export default function AdminEmployees() {
     e.preventDefault();
     if (!editingEmployee) return;
 
-    await apiFetch(`/admin/employee/${editingEmployee.id}`, {
+    const res = await apiFetch(`/admin/employee/${editingEmployee.id}`, {
       method: 'PUT',
       body: JSON.stringify({
         name: editingEmployee.name,
@@ -96,6 +111,13 @@ export default function AdminEmployees() {
         role: 'EMPLOYEE'
       })
     });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(`Gagal: ${err.message || 'Terjadi kesalahan update'}`);
+      return;
+    }
+
     alert('Data Karyawan Berhasil Diperbarui!');
     setEditingEmployee(null);
     fetchEmployees();

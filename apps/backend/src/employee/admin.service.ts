@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
@@ -6,10 +6,14 @@ import * as bcrypt from 'bcryptjs';
 import { Readable } from 'stream';
 import { getPaginationMeta } from '../common/utils/pagination.util';
 import { startOfDay } from 'date-fns';
+import { NotificationGateway } from '../notification/notification.gateway';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationGateway: NotificationGateway,
+  ) {}
 
   async getDashboardStats() {
     const today = startOfDay(new Date());
@@ -152,7 +156,7 @@ export class AdminService {
     const defaultPassword = process.env.DEFAULT_EMPLOYEE_PASSWORD || 'wfh123';
     const hashedPassword = await bcrypt.hash(dto.password || defaultPassword, 10);
     
-    return this.prisma.user.create({
+    const newEmployee = await this.prisma.user.create({
       data: {
         email: dto.email,
         password: hashedPassword,
@@ -162,10 +166,12 @@ export class AdminService {
         attendanceType: dto.attendanceType,
       }
     });
+    this.notificationGateway.notifyProfileUpdated({ name: `Admin (via Dashboard)` });
+    return newEmployee;
   }
 
   async updateEmployee(id: string, dto: UpdateEmployeeDto) {
-    return this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
         name: dto.name,
@@ -175,6 +181,8 @@ export class AdminService {
         attendanceType: dto.attendanceType,
       }
     });
+    this.notificationGateway.notifyProfileUpdated(updatedUser);
+    return updatedUser;
   }
 
   async uploadBulkEmployees(file: Express.Multer.File) {
