@@ -81,6 +81,7 @@ export default function AdminReports() {
               <label className="text-secondary" style={{ fontSize: '13px' }}>Sampai:</label>
               <Input 
                 type="date" 
+                min={reportStartDate}
                 max={getToday()} 
                 value={reportEndDate} 
                 onChange={e => {

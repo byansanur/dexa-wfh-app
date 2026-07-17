@@ -222,6 +222,7 @@ export default function Employee() {
                   <label className="text-secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>End Date</label>
                   <Input 
                     type="date" 
+                    min={startDate}
                     max={getToday()} 
                     value={endDate} 
                     onChange={e => {
