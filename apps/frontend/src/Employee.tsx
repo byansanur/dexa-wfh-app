@@ -207,11 +207,29 @@ export default function Employee() {
               <div className="flex gap-2 items-center flex-wrap">
                 <div>
                   <label className="text-secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>Start Date</label>
-                  <Input type="date" max={endDate || getToday()} value={startDate} onChange={e => setStartDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
+                  <Input 
+                    type="date" 
+                    max={getToday()} 
+                    value={startDate} 
+                    onChange={e => {
+                      setStartDate(e.target.value);
+                      if (endDate && e.target.value > endDate) setEndDate(e.target.value);
+                    }} 
+                    containerStyle={{ marginBottom: 0 }} 
+                  />
                 </div>
                 <div>
                   <label className="text-secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>End Date</label>
-                  <Input type="date" min={startDate} max={getToday()} value={endDate} onChange={e => setEndDate(e.target.value)} containerStyle={{ marginBottom: 0 }} />
+                  <Input 
+                    type="date" 
+                    max={getToday()} 
+                    value={endDate} 
+                    onChange={e => {
+                      setEndDate(e.target.value);
+                      if (startDate && e.target.value < startDate) setStartDate(e.target.value);
+                    }} 
+                    containerStyle={{ marginBottom: 0 }} 
+                  />
                 </div>
                 <Button onClick={fetchHistory} style={{ height: '44px', alignSelf: 'flex-end' }}>Filter</Button>
               </div>
