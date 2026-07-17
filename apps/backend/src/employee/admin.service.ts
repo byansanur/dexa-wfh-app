@@ -5,7 +5,7 @@ import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import * as bcrypt from 'bcryptjs';
 import { Readable } from 'stream';
 import { getPaginationMeta } from '../common/utils/pagination.util';
-import { startOfDay } from 'date-fns';
+import { getTodayWIB } from '../common/utils/date.util';
 import { NotificationGateway } from '../notification/notification.gateway';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class AdminService {
   ) {}
 
   async getDashboardStats() {
-    const today = startOfDay(new Date());
+    const today = getTodayWIB();
 
     const [totalEmployees, presentToday, topPunctual] = await Promise.all([
       this.prisma.user.count({ where: { role: 'EMPLOYEE' } }),
@@ -47,7 +47,7 @@ export class AdminService {
   }
 
   async getEmployees(page: string = '1', limit: string = '10', search: string = '', status: string = '') {
-    const today = startOfDay(new Date());
+    const today = getTodayWIB();
     const pagination = getPaginationMeta(0, page, limit);
 
     const where: any = { role: 'EMPLOYEE' };

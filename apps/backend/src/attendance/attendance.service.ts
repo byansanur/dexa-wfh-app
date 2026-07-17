@@ -1,5 +1,5 @@
 import { Injectable, Inject, BadRequestException } from '@nestjs/common';
-import { startOfDay } from 'date-fns';
+import { getTodayWIB } from '../common/utils/date.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { NotificationGateway } from '../notification/notification.gateway';
@@ -13,16 +13,7 @@ export class AttendanceService {
   ) {}
 
   async clockIn(userId: string) {
-    const now = new Date();
-    
-    // Force timezone to GMT+7 (Asia/Jakarta) to prevent server UTC offset bugs
-    const formatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', year: 'numeric', month: 'numeric', day: 'numeric' });
-    const parts = formatter.formatToParts(now);
-    const y = parseInt(parts.find(p => p.type === 'year')!.value);
-    const m = parseInt(parts.find(p => p.type === 'month')!.value) - 1;
-    const d = parseInt(parts.find(p => p.type === 'day')!.value);
-    
-    const today = new Date(Date.UTC(y, m, d));
+    const today = getTodayWIB();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
