@@ -17,7 +17,7 @@ export class AuthService implements OnModuleInit {
       await this.prisma.user.create({
         data: {
           email: 'admin@dexa.com',
-          password: await bcrypt.hash('admin123', 10),
+          password: await bcrypt.hash(process.env.DEFAULT_ADMIN_PASSWORD || 'admin123', 10),
           name: 'Super Admin HR',
           role: 'ADMIN',
         }
@@ -30,7 +30,7 @@ export class AuthService implements OnModuleInit {
       await this.prisma.user.create({
         data: {
           email: 'employee@dexa.com',
-          password: await bcrypt.hash('employee123', 10),
+          password: await bcrypt.hash(process.env.DEFAULT_EMPLOYEE_PASSWORD || 'employee123', 10),
           name: 'Budi (Karyawan)',
           role: 'EMPLOYEE',
           attendanceType: 'MULTI', // Seed as Multi-Shift for testing
