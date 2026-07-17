@@ -147,6 +147,8 @@ export default function AdminEmployees() {
               onChange={e => setName(e.target.value)} 
               required 
               minLength={3}
+              pattern="^[a-zA-Z\s.'-]+$"
+              title="Nama hanya boleh berisi huruf, spasi, titik, apostrof, atau strip."
             />
             <Input 
               label="Nomor HP"
@@ -270,6 +272,8 @@ export default function AdminEmployees() {
                 onChange={e => setEditingEmployee({...editingEmployee, name: e.target.value})} 
                 required 
                 minLength={3}
+                pattern="^[a-zA-Z\s.'-]+$"
+                title="Nama hanya boleh berisi huruf, spasi, titik, apostrof, atau strip."
               />
               <Input 
                 label="Nomor HP"
