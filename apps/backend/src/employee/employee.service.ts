@@ -85,8 +85,8 @@ export class EmployeeService {
     
     if (startDate || endDate) {
       whereClause.date = {};
-      if (startDate) whereClause.date.gte = new Date(startDate);
-      if (endDate) whereClause.date.lte = new Date(endDate);
+      if (startDate) whereClause.date.gte = new Date(`${startDate}T00:00:00`);
+      if (endDate) whereClause.date.lte = new Date(`${endDate}T23:59:59`);
     } else {
       const now = new Date();
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
