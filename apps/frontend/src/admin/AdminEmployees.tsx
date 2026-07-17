@@ -146,7 +146,7 @@ export default function AdminEmployees() {
               pattern="^[a-zA-Z ]*$" 
               title="Nama lengkap hanya boleh terdiri dari huruf dan spasi."
               value={name} 
-              onChange={e => setName(e.target.value)} 
+              onChange={e => setName(e.target.value.replace(/[^a-zA-Z ]/g, ''))} 
               required 
               minLength={3}
             />
@@ -267,10 +267,13 @@ export default function AdminEmployees() {
               />
               <Input 
                 label="Nama Lengkap"
-                type="text" 
+                type="text"
+                pattern="^[a-zA-Z ]*$" 
+                title="Nama lengkap hanya boleh terdiri dari huruf dan spasi."
                 value={editingEmployee.name} 
-                onChange={e => setEditingEmployee({...editingEmployee, name: e.target.value})} 
+                onChange={e => setEditingEmployee({...editingEmployee, name: e.target.value.replace(/[^a-zA-Z ]/g, '')})} 
                 required 
+                minLength={3}
               />
               <Input 
                 label="Nomor HP"
