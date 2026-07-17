@@ -41,6 +41,7 @@ export default function Employee() {
       return;
     }
     
+    socket.connect();
     socket.on('connect', () => console.log('WS Employee Connected'));
     socket.on('AutoClockOut', (data: any) => {
       const currentProfile = JSON.parse(localStorage.getItem('user') || '{}');
@@ -57,6 +58,7 @@ export default function Employee() {
       clearInterval(timer);
       socket.off('connect');
       socket.off('AutoClockOut');
+      socket.disconnect();
     };
   }, []);
 

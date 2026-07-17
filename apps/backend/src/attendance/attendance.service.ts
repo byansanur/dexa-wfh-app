@@ -109,7 +109,7 @@ export class AttendanceService {
     return attendance;
   }
 
-  @Cron('59 59 23 * * *', { timeZone: 'Asia/Jakarta' })
+  @Cron('0 33 0 * * *', { timeZone: 'Asia/Jakarta' }) // Jadwal sementara untuk testing (00:33 WIB)
   async autoClockOutOvertime() {
     const activeSessions = await this.prisma.attendance.findMany({
       where: { clockOut: null }
