@@ -6,6 +6,7 @@ import { Button } from './components/ui/Button';
 import { Input } from './components/ui/Input';
 import { Chip } from './components/ui/Chip';
 import { Header } from './components/ui/Header';
+import { socket } from './utils/socket';
 
 export default function Employee() {
   const navigate = useNavigate();
@@ -39,10 +40,24 @@ export default function Employee() {
       navigate('/login');
       return;
     }
+    
+    socket.on('connect', () => console.log('WS Employee Connected'));
+    socket.on('AutoClockOut', (data: any) => {
+      const currentProfile = JSON.parse(localStorage.getItem('user') || '{}');
+      if (data.userId === currentProfile.id) {
+        alert('Sistem telah melakukan Clock Out otomatis karena pergantian hari. Silakan Clock In kembali jika Anda sedang bekerja lembur/overtime.');
+        fetchHistory();
+      }
+    });
+
     fetchProfile();
     fetchHistory();
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      socket.off('connect');
+      socket.off('AutoClockOut');
+    };
   }, []);
 
   const fetchProfile = async () => {

@@ -9,4 +9,8 @@ export class NotificationGateway {
   notifyProfileUpdated(user: any) {
     this.server.emit('ProfileUpdated', user);
   }
+
+  notifyAutoClockOut(userId: string) {
+    this.server.emit('AutoClockOut', { userId });
+  }
 }

@@ -1,4 +1,5 @@
 import { Injectable, Inject, BadRequestException } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { getTodayWIB } from '../common/utils/date.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClientProxy } from '@nestjs/microservices';
@@ -106,5 +107,29 @@ export class AttendanceService {
     });
 
     return attendance;
+  }
+
+  @Cron('59 59 23 * * *', { timeZone: 'Asia/Jakarta' })
+  async autoClockOutOvertime() {
+    const activeSessions = await this.prisma.attendance.findMany({
+      where: { clockOut: null }
+    });
+
+    if (activeSessions.length > 0) {
+      const now = new Date();
+      await this.prisma.attendance.updateMany({
+        where: { clockOut: null },
+        data: { clockOut: now }
+      });
+
+      for (const session of activeSessions) {
+        this.notificationGateway.notifyAutoClockOut(session.userId);
+      }
+      
+      // Notify Admin via WebSocket to refresh Dashboard
+      this.notificationGateway.server.emit('AttendanceLogged', { autoClockOut: true });
+      
+      console.log(`Auto Clock-Out performed for ${activeSessions.length} employees.`);
+    }
   }
 }
