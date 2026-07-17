@@ -16,8 +16,17 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
 
   const url = `${import.meta.env.VITE_API_URL}${endpoint}`;
 
-  return fetch(url, {
+  const response = await fetch(url, {
     ...options,
     headers
   });
+
+  // Handle token expiration globally
+  if (response.status === 401 && window.location.pathname !== '/login') {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    window.location.href = '/login';
+  }
+
+  return response;
 };
