@@ -139,18 +139,16 @@ export default function AdminEmployees() {
               value={email} 
               onChange={e => setEmail(e.target.value)} 
               required 
-              pattern="^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-              title="Email hanya boleh mengandung huruf, angka, dan karakter spesial (. - _)"
             />
             <Input 
               label="Nama Lengkap"
-              type="text" 
+              type="text"
+              pattern="^[a-zA-Z ]*$" 
+              title="Nama lengkap hanya boleh terdiri dari huruf dan spasi."
               value={name} 
               onChange={e => setName(e.target.value)} 
               required 
               minLength={3}
-              pattern="^[a-zA-Z\s.'-]+$"
-              title="Nama hanya boleh berisi huruf, spasi, titik, apostrof, atau strip."
             />
             <Input 
               label="Nomor HP"
@@ -266,8 +264,6 @@ export default function AdminEmployees() {
                 value={editingEmployee.email} 
                 onChange={e => setEditingEmployee({...editingEmployee, email: e.target.value})} 
                 required 
-                pattern="^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                title="Email hanya boleh mengandung huruf, angka, dan karakter spesial (. - _)"
               />
               <Input 
                 label="Nama Lengkap"
@@ -275,9 +271,6 @@ export default function AdminEmployees() {
                 value={editingEmployee.name} 
                 onChange={e => setEditingEmployee({...editingEmployee, name: e.target.value})} 
                 required 
-                minLength={3}
-                pattern="^[a-zA-Z\s.'-]+$"
-                title="Nama hanya boleh berisi huruf, spasi, titik, apostrof, atau strip."
               />
               <Input 
                 label="Nomor HP"
