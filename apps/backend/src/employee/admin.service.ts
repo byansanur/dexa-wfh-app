@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
@@ -156,33 +156,47 @@ export class AdminService {
     const defaultPassword = process.env.DEFAULT_EMPLOYEE_PASSWORD || 'wfh123';
     const hashedPassword = await bcrypt.hash(dto.password || defaultPassword, 10);
     
-    const newEmployee = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        password: hashedPassword,
-        name: dto.name,
-        role: dto.role || 'EMPLOYEE',
-        phone: dto.phone,
-        attendanceType: dto.attendanceType,
+    try {
+      const newEmployee = await this.prisma.user.create({
+        data: {
+          email: dto.email,
+          password: hashedPassword,
+          name: dto.name,
+          role: dto.role || 'EMPLOYEE',
+          phone: dto.phone,
+          attendanceType: dto.attendanceType,
+        }
+      });
+      this.notificationGateway.notifyProfileUpdated({ name: `Admin (via Dashboard)` });
+      return newEmployee;
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new BadRequestException('Email sudah terdaftar di sistem. Gunakan email lain.');
       }
-    });
-    this.notificationGateway.notifyProfileUpdated({ name: `Admin (via Dashboard)` });
-    return newEmployee;
+      throw error;
+    }
   }
 
   async updateEmployee(id: string, dto: UpdateEmployeeDto) {
-    const updatedUser = await this.prisma.user.update({
-      where: { id },
-      data: {
-        name: dto.name,
-        email: dto.email,
-        role: dto.role,
-        phone: dto.phone,
-        attendanceType: dto.attendanceType,
+    try {
+      const updatedUser = await this.prisma.user.update({
+        where: { id },
+        data: {
+          name: dto.name,
+          email: dto.email,
+          role: dto.role,
+          phone: dto.phone,
+          attendanceType: dto.attendanceType,
+        }
+      });
+      this.notificationGateway.notifyProfileUpdated(updatedUser);
+      return updatedUser;
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new BadRequestException('Email sudah terdaftar di sistem. Gunakan email lain.');
       }
-    });
-    this.notificationGateway.notifyProfileUpdated(updatedUser);
-    return updatedUser;
+      throw error;
+    }
   }
 
   async uploadBulkEmployees(file: Express.Multer.File) {

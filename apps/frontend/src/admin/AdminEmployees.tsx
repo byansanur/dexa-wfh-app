@@ -261,6 +261,8 @@ export default function AdminEmployees() {
               <Input 
                 label="Email"
                 type="email" 
+                pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                title="Format email tidak valid"
                 value={editingEmployee.email} 
                 onChange={e => setEditingEmployee({...editingEmployee, email: e.target.value})} 
                 required 
