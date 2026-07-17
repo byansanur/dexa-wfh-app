@@ -24,11 +24,11 @@ export default function AdminReports() {
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
 
   useEffect(() => {
     if (token) fetchReport();
-  }, [token, page]); // Only refetch automatically when page or token changes
+  }, [token, page, limit]); // Only refetch automatically when page, limit, or token changes
 
   const fetchReport = async () => {
     let url = `/admin/reports/attendance`;
