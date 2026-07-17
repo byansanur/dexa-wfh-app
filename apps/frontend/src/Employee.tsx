@@ -288,7 +288,9 @@ export default function Employee() {
                     label="Phone Number (Nomor Handphone)"
                     type="text" 
                     value={phone} 
-                    onChange={(e) => setPhone(e.target.value)} 
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))} 
+                    pattern="^[0-9]{10,15}$"
+                    title="Nomor HP harus berupa angka dengan panjang 10 hingga 15 karakter."
                   />
                 </div>
               </div>

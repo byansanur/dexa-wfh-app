@@ -290,7 +290,7 @@ export default function AdminEmployees() {
                 label="Nomor HP"
                 type="text" 
                 value={editingEmployee.phone || ''} 
-                onChange={e => setEditingEmployee({...editingEmployee, phone: e.target.value})} 
+                onChange={e => setEditingEmployee({...editingEmployee, phone: e.target.value.replace(/[^0-9]/g, '')})} 
                 pattern="^[0-9]{10,15}$"
                 title="Nomor HP harus berupa angka dengan panjang 10 hingga 15 karakter."
               />
