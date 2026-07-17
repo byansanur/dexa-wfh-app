@@ -139,6 +139,8 @@ export default function AdminEmployees() {
               value={email} 
               onChange={e => setEmail(e.target.value)} 
               required 
+              pattern="^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+              title="Email hanya boleh mengandung huruf, angka, dan karakter spesial (. - _)"
             />
             <Input 
               label="Nama Lengkap"
@@ -264,6 +266,8 @@ export default function AdminEmployees() {
                 value={editingEmployee.email} 
                 onChange={e => setEditingEmployee({...editingEmployee, email: e.target.value})} 
                 required 
+                pattern="^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                title="Email hanya boleh mengandung huruf, angka, dan karakter spesial (. - _)"
               />
               <Input 
                 label="Nama Lengkap"
