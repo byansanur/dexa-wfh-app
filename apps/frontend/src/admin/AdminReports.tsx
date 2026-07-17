@@ -27,8 +27,12 @@ export default function AdminReports() {
   const [limit, setLimit] = useState(10);
 
   useEffect(() => {
-    if (token) fetchReport();
-  }, [token, page, limit]); // Only refetch automatically when page, limit, or token changes
+    if (token) {
+      if (reportSearchQuery.length === 0 || reportSearchQuery.length >= 3) {
+        fetchReport();
+      }
+    }
+  }, [token, page, limit, reportSearchQuery]);
 
   const fetchReport = async () => {
     let url = `/admin/reports/attendance`;
@@ -82,7 +86,10 @@ export default function AdminReports() {
               type="text" 
               placeholder="Pencarian Global (Nama, Email)..." 
               value={reportSearchQuery}
-              onChange={e => setReportSearchQuery(e.target.value)}
+              onChange={e => {
+                setReportSearchQuery(e.target.value);
+                setPage(1);
+              }}
               onKeyDown={e => e.key === 'Enter' && handleFilterSubmit()}
               containerStyle={{ marginBottom: 0, minWidth: '250px' }}
             />
