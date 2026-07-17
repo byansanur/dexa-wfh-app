@@ -28,7 +28,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (token) {
       fetchStats();
-      fetchEmployees();
+      if (searchQuery.length === 0 || searchQuery.length >= 3) {
+        fetchEmployees();
+      }
     }
   }, [token, page, searchQuery, statusFilter]);
 

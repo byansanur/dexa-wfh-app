@@ -25,7 +25,11 @@ export default function AdminEmployees() {
   const [limit] = useState(10);
 
   useEffect(() => {
-    if (token) fetchEmployees();
+    if (token) {
+      if (searchQuery.length === 0 || searchQuery.length >= 3) {
+        fetchEmployees();
+      }
+    }
   }, [token, page, searchQuery]);
 
   const fetchEmployeesRef = useRef<any>(null);
