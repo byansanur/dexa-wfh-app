@@ -1,113 +1,98 @@
 # Dexa WFH App
 
-Aplikasi ini merupakan sistem manajemen kehadiran (Work From Home) yang dikembangkan untuk memfasilitasi pencatatan absensi karyawan secara seketika (real-time) dan pengelolaan data operasional oleh pengelola (admin). Proyek ini dibangun menggunakan arsitektur monorepo dengan pemisahan yang jelas antara sisi antarmuka pengguna (frontend) dan logika server (backend).
+Aplikasi manajemen kehadiran (Work From Home) karyawan dan monitoring HRD. Dibangun menggunakan arsitektur monorepo dengan NestJS di sisi backend dan React (Vite) di sisi frontend.
 
-## Teknologi yang Digunakan
+## Tech Stack
 
-Aplikasi ini memanfaatkan serangkaian teknologi modern untuk memastikan skalabilitas dan keandalan sistem:
+- **Frontend:** React + Vite, React Router, dan **ZenGrid Design System**.
+- **Backend:** NestJS (REST API) + Helmet + Rate Limiter (`@nestjs/throttler`).
+- **Database Utama:** PostgreSQL + Prisma ORM (lengkap dengan composite index pada data absensi).
+- **Log Database:** MongoDB (untuk audit log terpisah secara schemaless).
+- **Message Broker:** RabbitMQ (untuk streaming event log secara asinkron).
+- **Object Storage:** MinIO (S3 Compatible) untuk backup log & simpan foto profil (auto-convert ke WebP menggunakan Sharp).
+- **Real-time:** Socket.io (push notifikasi ke dashboard admin).
+- **Scheduler:** `@nestjs/schedule` untuk auto-archive log ke MinIO dan auto-clockout lembur harian.
+- **Containerization:** Docker (multi-stage build untuk backend/frontend) & Docker Compose.
 
-- **Frontend:** Dibangun menggunakan **React** dan **Vite**, serta React Router untuk navigasi antarmuka yang dinamis. Tampilan antarmuka (UI) dikembangkan secara penuh menggunakan pedoman **Design System [ZenGrid](https://designmd.ai/chef/zengrid)**.
-- **Backend:** Menggunakan **NestJS** sebagai kerangka kerja utama pembuatan REST API, dilengkapi middleware keamanan **Helmet** dan **Rate Limiting** (`@nestjs/throttler`).
-- **Database Relasional:** **PostgreSQL** yang dioperasikan melalui **Prisma ORM** untuk menyimpan entitas data utama seperti pengguna dan catatan absensi, dilengkapi **indeks komposit** untuk optimasi kueri.
-- **Database NoSQL:** **MongoDB** untuk menyimpan rekam jejak (audit log) secara fleksibel dalam format dokumen JSON.
-- **Message Broker:** **RabbitMQ** untuk menangani komunikasi antar layanan, khususnya dalam mengirimkan data log secara asinkron (Event-Driven) tanpa membebani proses utama.
-- **Penyimpanan Objek & Optimasi:** **MinIO** (kompatibel dengan Amazon S3) untuk mengelola arsip log. Unggahan foto profil secara otomatis dikonversi ke format **WebP** menggunakan pustaka **Sharp** demi menghemat ruang penyimpanan. Kebijakan *bucket* membatasi akses publik hanya untuk berkas gambar.
-- **WebSockets:** **Socket.io** digunakan untuk mendistribusikan notifikasi langsung kepada admin setiap kali terjadi perubahan data penting.
-- **Penjadwalan (Cron):** `@nestjs/schedule` untuk proses pengarsipan log MongoDB ke MinIO dan *auto clock-out* lembur secara otomatis setiap hari.
-- **Geolocation API:** Terintegrasi pada frontend untuk mencatat lokasi akurat (*latitude/longitude*) karyawan saat absen.
-- **Containerization:** **Docker** dengan multi-stage Dockerfile untuk backend (NestJS) dan frontend (Nginx), serta **Docker Compose** untuk orkestrasi infrastruktur lokal.
+---
 
 ## Fitur Utama
 
-- **Autentikasi Pengguna:** Sistem login aman menggunakan JWT yang disimpan dalam **HTTP-Only Cookie** (`httpOnly`, `sameSite: 'lax'`, `secure` di produksi) yang membedakan hak akses antara Karyawan dan Admin. Dilengkapi endpoint `POST /auth/logout` untuk pembersihan sesi dan penanganan *Auto-Logout* jika token kadaluarsa (Pencegatan 401 Unauthorized).
-- **Manajemen Karyawan:** Admin memiliki keleluasaan untuk menambahkan karyawan baru secara satuan atau massal via CSV melalui **modal popup** interaktif. Mendukung jam kerja fleksibel dengan pengaturan *Single-Shift/Multi-Shift* dan jadwal masuk khusus (`officeHourStart`).
-- **Pemantauan Langsung & Algoritma Adil:** Dasbor admin menampilkan status kehadiran *real-time* (WebSocket). Terdapat fitur **Peringkat 3 Terbaik (Top 3 Punctual)** yang menghitung tingkat kedisiplinan secara adil berdasarkan selisih waktu hadir dengan jam kerja masing-masing karyawan, bukan berdasarkan waktu absolut.
-- **Pelacakan Lokasi (Geolocation):** Mencegah kecurangan dengan mewajibkan karyawan mengaktifkan akses lokasi (*GPS*) saat melakukan *Clock In/Out*. Koordinat GPS divalidasi menggunakan DTO di backend. Lokasi ini dipetakan dan dapat dipantau langsung oleh Admin melalui tautan *Google Maps*.
-- **Laporan Kehadiran:** Tersedia fitur laporan agregat di mana admin dapat menyaring data absensi berdasarkan rentang tanggal tertentu atau mencari karyawan secara global, diurutkan secara kronologis (terbaru di atas).
-- **Rekam Jejak & Pengarsipan (Log Archival):** Sistem mencatat setiap perubahan profil dan absensi, disalurkan via RabbitMQ ke MongoDB, lalu diekspor secara *batch* ke MinIO secara otomatis.
-- **Auto Clock-Out Lembur:** Cron job harian (`23:59:59 WIB`) secara otomatis menutup sesi absensi yang masih aktif menggunakan **Prisma Transaction** untuk menjamin atomisitas operasi.
+- **Secure Session:** Autentikasi JWT via HTTP-Only Cookie (`sameSite: lax`). Dilengkapi penanganan auto-logout saat token kedaluwarsa.
+- **CRUD & Bulk Import Karyawan:** Tambah data karyawan satuan atau massal via upload file CSV pada modal dashboard admin.
+- **Top 3 Punctual (Algoritma Adil):** Perhitungan tingkat kedisiplinan berdasarkan selisih waktu masuk dengan jam kerja masing-masing (bukan waktu masuk absolut).
+- **GPS Geolocation:** Validasi koordinat GPS saat absen di backend via DTO (Regex) dan visualisasi lokasi presisi dengan link Google Maps di admin.
+- **Audit Trail & Archival:** Log mutasi profile/absensi dialirkan via RabbitMQ ke MongoDB, lalu diekspor otomatis ke file `.log` di MinIO tiap hari.
+- **Auto Clock-Out:** Sistem otomatis menutup sesi absen yang menggantung pada pukul 23:59 WIB menggunakan Prisma Transaction untuk menjaga konsistensi data.
+
+---
 
 ## Keamanan (Security Hardening)
 
-Sistem mengadopsi prinsip pengamanan berstandar industri:
+- **HTTP-Only Cookie:** Mencegah pencurian token JWT via XSS.
+- **Rate Limiting & Helmet:** Proteksi brute-force (100 req/min per IP) dan pengaktifan header HTTP standar industri.
+- **CORS Policy:** Akses REST API dibatasi hanya untuk origin terdaftar.
+- **Strict Validation:** Sanitasi payload API menggunakan NestJS ValidationPipe dan class-validator DTO.
+- **File Upload Guard:** Batasan ukuran file (2MB foto, 5MB CSV) serta bucket policy MinIO (hanya file gambar WebP yang boleh diakses publik).
+- **Security Production:** Seeding db diblokir jika `NODE_ENV=production` dan inisialisasi app akan error jika `JWT_SECRET` kosong di production.
+- **Password Security:** Password di-hash dengan bcrypt dan tidak pernah disertakan dalam response query DB/API.
 
-- **HTTP-Only Cookie Auth:** JWT tidak pernah disimpan di `localStorage` (rentan XSS), melainkan di dalam HTTP-Only Cookie yang tidak dapat diakses oleh JavaScript sisi klien.
-- **Helmet:** Middleware keamanan HTTP headers standar industri aktif secara global.
-- **Rate Limiting:** Maksimal 100 request per menit per IP menggunakan `@nestjs/throttler`.
-- **CORS Policy:** Origin dibatasi melalui variabel lingkungan `ALLOWED_ORIGINS` dengan mode `credentials: true`.
-- **Input Validation:** Seluruh input divalidasi menggunakan DTO dan `ValidationPipe` (`whitelist: true`, `transform: true`).
-- **File Upload Limits:** Foto profil maks 2MB, CSV maks 5MB.
-- **MinIO Bucket Policy:** Akses publik hanya untuk tipe gambar; berkas `.log` bersifat privat.
-- **Production Seed Guard:** Proses *seeding* data demo diblokir saat `NODE_ENV=production`.
-- **Password Hash Exclusion:** Hash password tidak pernah dikembalikan dalam respon API.
+---
 
-## Panduan Instalasi dan Penggunaan
+## Panduan Lokal & Development
 
-Pastikan komputer Anda sudah terpasang Node.js, pnpm, dan Docker.
+### 1. Jalankan Infrastruktur Lokal (Docker)
+Infrastruktur (PostgreSQL, MongoDB, RabbitMQ, MinIO) dikonfigurasi dengan automatic healthcheck.
+```bash
+docker-compose up -d
+```
 
-1. **Persiapan Infrastruktur Lokal**
-   Aplikasi membutuhkan beberapa layanan infrastruktur data. Anda dapat menjalankannya sekaligus menggunakan konfigurasi Docker Compose yang telah disediakan. Seluruh layanan dilengkapi *healthcheck* otomatis dan kebijakan `restart: unless-stopped`.
-   ```bash
-   docker-compose up -d
-   ```
+### 2. Install Dependencies
+Jalankan di root folder:
+```bash
+pnpm install
+```
 
-2. **Instalasi Dependensi**
-   Karena proyek ini menggunakan ruang kerja pnpm (*pnpm workspace*), Anda cukup menjalankan satu perintah di direktori paling luar (root) untuk menginstal seluruh kebutuhan proyek.
-   ```bash
-   pnpm install
-   ```
+### 3. Setup Env & Database
+Copy `.env.example` ke `.env` di `/apps/backend` dan `/apps/frontend`.
+Lalu sinkronisasi database:
+```bash
+cd apps/backend
+npx prisma generate
+npx prisma db push
+```
 
-3. **Konfigurasi dan Database**
-   Pastikan Anda menyalin pengaturan dari file `.env.example` menjadi `.env` pada direktori `/apps/backend` dan `/apps/frontend`. Setelah itu, bangun struktur *Client* dan sinkronkan database relasional menggunakan Prisma.
-   ```bash
-   cd apps/backend
-   npx prisma generate
-   npx prisma db push
-   ```
+### 4. Jalankan Aplikasi
+Frontend menggunakan Vite Proxy, sehingga request API (`/api`) dan WebSocket (`/socket.io`) diarahkan otomatis ke backend (port 3000) tanpa masalah CORS.
 
-4. **Menjalankan Aplikasi**
-   Aplikasi ini telah dikonfigurasi dengan **Vite Proxy** di frontend. Hal ini menjamin bahwa seluruh API internal dan koneksi WebSockets tersalurkan (*proxied*) secara rapi melalui frontend, menghilangkan potensi CORS dan menyederhanakan konfigurasi port.
-   
-   Buka dua jendela terminal.
-   **Terminal 1 (Backend):**
-   ```bash
-   cd apps/backend
-   pnpm run start:dev
-   ```
-   
-   **Terminal 2 (Frontend):**
-   ```bash
-   cd apps/frontend
-   pnpm run dev
-   ```
+Jalankan di 2 terminal terpisah:
+- **Backend:** `cd apps/backend && pnpm run start:dev`
+- **Frontend:** `cd apps/frontend && pnpm run dev`
 
-5. **Akses dari Luar (Ngrok)**
-   Karena konsep Vite Proxy, Anda hanya perlu mengekspos 1 port (port frontend, bawaannya `5173`) menggunakan *ngrok* untuk mendemonstrasikan keseluruhan ekosistem secara utuh di internet publik:
-   ```bash
-   ngrok http 5173
-   ```
+*Catatan: Jika ingin menggunakan Ngrok, Anda hanya perlu mengekspos port frontend saja (`5173`) karena proxy routing sudah otomatis terpusat.*
 
-6. **Unit Test**
-   Menjalankan seluruh pengujian unit backend:
-   ```bash
-   cd apps/backend
-   pnpm run test
-   ```
+### 5. Jalankan Unit Test
+```bash
+cd apps/backend
+pnpm run test
+```
+
+---
 
 ## Deployment Produksi (Docker)
 
-Proyek ini menyediakan **multi-stage Dockerfile** untuk backend dan frontend:
-
+Gunakan perintah build berikut dari root direktori:
 ```bash
-# Build backend image (dari root monorepo)
+# Build Backend
 docker build -f apps/backend/Dockerfile -t dexa-wfh-backend .
 
-# Build frontend image (dari root monorepo)
+# Build Frontend (Nginx Alpine)
 docker build -f apps/frontend/Dockerfile -t dexa-wfh-frontend .
 ```
 
-- **Backend:** Image `node:20-alpine`, dijalankan dengan non-root user `node`, `NODE_ENV=production`, expose port `3000`.
-- **Frontend:** Image `nginx:alpine` menyajikan aset statis React, dengan konfigurasi `nginx.conf` yang merutekan `/api/*` dan `/socket.io/*` ke container backend.
+*Frontend image menyajikan file statis React via Nginx dan mem-proxy request API `/api/*` serta WebSocket `/socket.io/*` langsung ke container backend.*
+
+---
 
 ## Struktur Proyek
 
@@ -144,3 +129,4 @@ dexa-wfh-app/
 ├── sample_employees.csv         # Contoh data karyawan untuk bulk upload
 └── pnpm-workspace.yaml          # Konfigurasi monorepo pnpm workspace
 ```
+
