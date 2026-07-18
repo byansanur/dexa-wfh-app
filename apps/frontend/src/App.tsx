@@ -6,6 +6,18 @@ import Admin from './Admin';
 import NotFound from './pages/NotFound';
 import './index.css';
 
+const RootRedirect = () => {
+  const raw = localStorage.getItem('user');
+  if (raw) {
+    try {
+      const user = JSON.parse(raw);
+      if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
+      if (user.role === 'EMPLOYEE') return <Navigate to="/employee" replace />;
+    } catch (e) {}
+  }
+  return <Navigate to="/login" replace />;
+};
+
 export default function App() {
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -21,6 +33,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<RootRedirect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/employee/*" element={<Employee />} />
         <Route path="/admin/*" element={<Admin />} />

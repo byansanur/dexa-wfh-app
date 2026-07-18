@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from './utils/api';
 import { Card } from './components/ui/Card';
@@ -9,6 +9,20 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const raw = localStorage.getItem('user');
+    if (raw) {
+      try {
+        const user = JSON.parse(raw);
+        if (user.role === 'ADMIN') {
+          navigate('/admin', { replace: true });
+        } else if (user.role === 'EMPLOYEE') {
+          navigate('/employee', { replace: true });
+        }
+      } catch (e) {}
+    }
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
