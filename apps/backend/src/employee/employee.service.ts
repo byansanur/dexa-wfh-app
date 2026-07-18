@@ -5,6 +5,7 @@ import { NotificationGateway } from '../notification/notification.gateway';
 import { StorageService } from '../storage/storage.service';
 import * as bcrypt from 'bcryptjs';
 import { UnauthorizedException } from '@nestjs/common';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class EmployeeService {
@@ -15,7 +16,7 @@ export class EmployeeService {
     private readonly storageService: StorageService,
   ) {}
 
-  async updateProfile(userId: string, dto: any, file?: Express.Multer.File) {
+  async updateProfile(userId: string, dto: UpdateProfileDto, file?: Express.Multer.File) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('User not found');
 

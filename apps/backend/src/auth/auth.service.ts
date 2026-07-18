@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, OnModuleInit } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
@@ -42,7 +43,7 @@ export class AuthService implements OnModuleInit {
     }
   }
 
-  async login(loginDto: any) {
+  async login(loginDto: LoginDto) {
     const user = await this.prisma.user.findUnique({ where: { email: loginDto.email } });
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');

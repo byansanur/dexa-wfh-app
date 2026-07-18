@@ -1,7 +1,7 @@
 import { Controller, Put, Body, UseInterceptors, UploadedFile, UseGuards, Req, Get, Query } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { EmployeeService } from './employee.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('employee')
 @UseGuards(JwtAuthGuard)
@@ -14,7 +14,7 @@ export class EmployeeController {
   }))
   async updateProfile(
     @Req() req: any,
-    @Body() body: any,
+    @Body() body: UpdateProfileDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
     return this.employeeService.updateProfile(req.user.userId, body, file);
