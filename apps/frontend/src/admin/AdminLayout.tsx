@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { socket } from '../utils/socket';
 import { Button } from '../components/ui/Button';
+import { apiFetch } from '../utils/api';
 
 export default function AdminLayout() {
   const navigate = useNavigate();
@@ -38,7 +39,12 @@ export default function AdminLayout() {
     }, 5000);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await apiFetch('/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
     localStorage.clear();
     navigate('/login');
   };

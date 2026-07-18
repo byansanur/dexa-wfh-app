@@ -3,6 +3,8 @@ import { EmployeeService } from './employee.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { NotificationGateway } from '../notification/notification.gateway';
+import { StorageService } from '../storage/storage.service';
+import { of } from 'rxjs';
 
 describe('EmployeeService', () => {
   let service: EmployeeService;
@@ -13,16 +15,21 @@ describe('EmployeeService', () => {
   beforeEach(async () => {
     const mockPrismaService = {
       user: {
+        findUnique: jest.fn(),
         update: jest.fn(),
       },
     };
     
     const mockAmqpClient = {
-      emit: jest.fn(),
+      emit: jest.fn().mockReturnValue(of(true)),
     };
     
     const mockNotificationGateway = {
       notifyProfileUpdated: jest.fn(),
+    };
+
+    const mockStorageService = {
+      uploadFile: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -31,6 +38,7 @@ describe('EmployeeService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: 'RABBITMQ_SERVICE', useValue: mockAmqpClient },
         { provide: NotificationGateway, useValue: mockNotificationGateway },
+        { provide: StorageService, useValue: mockStorageService },
       ],
     }).compile();
 
@@ -43,10 +51,11 @@ describe('EmployeeService', () => {
   describe('updateProfile', () => {
     it('should update user in DB, notify admin via WebSocket, and publish event to RabbitMQ', async () => {
       const userId = '123e4567-e89b-12d3-a456-426614174000';
-      const dto = { phone: '08123456789', photoUrl: 'http://test.com/img.jpg' };
+      const dto = { phone: '08123456789' };
       const updatedUser = { id: userId, ...dto, email: 'test@dexa.com' };
 
       // Mock Prisma response
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: userId, email: 'test@dexa.com', phone: '000000000' });
       (prisma.user.update as jest.Mock).mockResolvedValue(updatedUser);
 
       // Execute method

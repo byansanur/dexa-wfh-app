@@ -6,7 +6,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 
 export default function AdminReports() {
-  const [token] = useState(() => localStorage.getItem('token'));
+  const [isAuthenticated] = useState(() => !!localStorage.getItem('user'));
   
   const getFirstDayOfMonth = () => {
     const now = new Date();
@@ -27,12 +27,12 @@ export default function AdminReports() {
   const [limit, setLimit] = useState(10);
 
   useEffect(() => {
-    if (token) {
+    if (isAuthenticated) {
       if (reportSearchQuery.length === 0 || reportSearchQuery.length >= 3) {
         fetchReport();
       }
     }
-  }, [token, page, limit, reportSearchQuery]);
+  }, [isAuthenticated, page, limit, reportSearchQuery]);
 
   const fetchReport = async () => {
     let url = `/admin/reports/attendance`;

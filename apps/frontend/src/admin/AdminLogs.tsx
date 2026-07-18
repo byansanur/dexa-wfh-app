@@ -6,7 +6,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 
 export default function AdminLogs() {
-  const [token] = useState(() => localStorage.getItem('token'));
+  const [isAuthenticated] = useState(() => !!localStorage.getItem('user'));
   
   const [employees, setEmployees] = useState<any[]>([]);
   const [auditProfile, setAuditProfile] = useState<any[]>([]);
@@ -22,16 +22,16 @@ export default function AdminLogs() {
   const [limit] = useState(10);
 
   useEffect(() => {
-    if (token) fetchEmployees();
-  }, [token]);
+    if (isAuthenticated) fetchEmployees();
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    if (token) fetchProfileLogs();
-  }, [token, profilePage]);
+    if (isAuthenticated) fetchProfileLogs();
+  }, [isAuthenticated, profilePage]);
 
   useEffect(() => {
-    if (token) fetchAttendanceLogs();
-  }, [token, attendancePage]);
+    if (isAuthenticated) fetchAttendanceLogs();
+  }, [isAuthenticated, attendancePage]);
 
   const fetchEmployeesRef = useRef<any>(null);
   const fetchProfileLogsRef = useRef<any>(null);

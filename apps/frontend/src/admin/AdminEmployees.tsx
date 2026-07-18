@@ -7,7 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 
 export default function AdminEmployees() {
-  const [token] = useState(() => localStorage.getItem('token'));
+  const [isAuthenticated] = useState(() => !!localStorage.getItem('user'));
   const [employees, setEmployees] = useState<any[]>([]);
   
   const [name, setName] = useState('');
@@ -28,12 +28,12 @@ export default function AdminEmployees() {
   const [limit] = useState(10);
 
   useEffect(() => {
-    if (token) {
+    if (isAuthenticated) {
       if (searchQuery.length === 0 || searchQuery.length >= 3) {
         fetchEmployees();
       }
     }
-  }, [token, page, searchQuery]);
+  }, [isAuthenticated, page, searchQuery]);
 
   const fetchEmployeesRef = useRef<any>(null);
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function AdminEmployees() {
       socket.off('ProfileUpdated', handleUpdate);
       socket.off('AttendanceLogged', handleUpdate);
     };
-  }, [token]);
+  }, [isAuthenticated]);
 
   const fetchEmployees = async () => {
     let url = `/admin/employees?page=${page}&limit=${limit}&search=${encodeURIComponent(searchQuery)}`;

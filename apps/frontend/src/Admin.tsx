@@ -8,16 +8,18 @@ import AdminLogs from './admin/AdminLogs';
 
 export default function Admin() {
   const navigate = useNavigate();
-  const [token] = useState(() => localStorage.getItem('token'));
-  const [user] = useState(() => JSON.parse(localStorage.getItem('user') || '{}'));
+  const [user] = useState(() => {
+    const raw = localStorage.getItem('user');
+    return raw ? JSON.parse(raw) : null;
+  });
 
   useEffect(() => {
-    if (!token || user.role !== 'ADMIN') {
+    if (!user || user.role !== 'ADMIN') {
       navigate('/login');
     }
-  }, [token, user, navigate]);
+  }, [user, navigate]);
 
-  if (!token || user.role !== 'ADMIN') return null;
+  if (!user || user.role !== 'ADMIN') return null;
 
   return (
     <Routes>

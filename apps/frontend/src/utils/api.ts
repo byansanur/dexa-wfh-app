@@ -1,13 +1,7 @@
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
-  const token = localStorage.getItem('token');
-  
-  const headers: HeadersInit = {
+  const headers = {
     ...options.headers,
-  };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
+  } as Record<string, string>;
 
   // Ensure JSON content type if body is present and not FormData
   if (options.body && typeof options.body === 'string' && !headers['Content-Type']) {
@@ -18,13 +12,13 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
 
   const response = await fetch(url, {
     ...options,
-    headers
+    headers: headers as HeadersInit,
+    credentials: 'include', // Automatically send cookies
   });
 
   // Handle token expiration globally
   if (response.status === 401 && window.location.pathname !== '/login') {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    localStorage.removeItem('user');
     window.location.href = '/login';
   }
 

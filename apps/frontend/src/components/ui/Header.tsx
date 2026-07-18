@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from './Button';
+import { apiFetch } from '../../utils/api';
 
 interface HeaderProps {
   userName: string;
@@ -8,7 +9,12 @@ interface HeaderProps {
 export function Header({ userName }: HeaderProps) {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await apiFetch('/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
     localStorage.clear();
     navigate('/login');
   };

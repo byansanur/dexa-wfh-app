@@ -10,10 +10,12 @@ import { EmployeeEditProfileModal } from './employee/components/EmployeeEditProf
 
 export default function Employee() {
   const navigate = useNavigate();
-  const [token] = useState(() => localStorage.getItem('token'));
-  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user') || '{}'));
+  const [user, setUser] = useState(() => {
+    const raw = localStorage.getItem('user');
+    return raw ? JSON.parse(raw) : null;
+  });
   
-  const [phone, setPhone] = useState(user.phone || '');
+  const [phone, setPhone] = useState(user?.phone || '');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -36,7 +38,7 @@ export default function Employee() {
   const [endDate, setEndDate] = useState(getToday());
 
   useEffect(() => {
-    if (!token || user.role !== 'EMPLOYEE') {
+    if (!user || user.role !== 'EMPLOYEE') {
       navigate('/login');
       return;
     }

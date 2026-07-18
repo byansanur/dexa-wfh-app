@@ -19,7 +19,6 @@ export default function Login() {
       });
       if (!res.ok) throw new Error('Login failed');
       const data = await res.json();
-      localStorage.setItem('token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
       if (data.user.role === 'ADMIN') {
@@ -55,12 +54,8 @@ export default function Login() {
             Log In
           </Button>
         </form>
-        <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666', textAlign: 'center' }}>
-          <em>Default password untuk user baru: <strong>wfh123</strong></em>
-        </p>
-        <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#64748b' }}>
-          *Admin: admin@dexa.com / admin123<br/>
-          *Karyawan: employee@dexa.com / employee123
+        <p style={{ marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--stone)', textAlign: 'center' }}>
+          Portal Absensi WFH Dexa Group. Harap hubungi Admin jika Anda belum memiliki akun atau lupa kata sandi.
         </p>
       </Card>
     </div>

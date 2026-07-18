@@ -7,7 +7,7 @@ import { Chip } from '../components/ui/Chip';
 import { Input } from '../components/ui/Input';
 
 export default function AdminDashboard() {
-  const [token] = useState(() => localStorage.getItem('token'));
+  const [isAuthenticated] = useState(() => !!localStorage.getItem('user'));
   
   // Dashboard Stats State
   const [stats, setStats] = useState({
@@ -26,13 +26,13 @@ export default function AdminDashboard() {
   const [limit] = useState(10);
 
   useEffect(() => {
-    if (token) {
+    if (isAuthenticated) {
       fetchStats();
       if (searchQuery.length === 0 || searchQuery.length >= 3) {
         fetchEmployees();
       }
     }
-  }, [token, page, searchQuery, statusFilter]);
+  }, [isAuthenticated, page, searchQuery, statusFilter]);
 
   const fetchStatsRef = useRef<any>(null);
   const fetchEmployeesRef = useRef<any>(null);
