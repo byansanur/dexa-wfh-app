@@ -19,6 +19,8 @@ export default function AdminEmployees() {
 
   const [searchQuery, setSearchQuery] = useState('');
   
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<any | null>(null);
 
   const [page, setPage] = useState(1);
@@ -79,6 +81,7 @@ export default function AdminEmployees() {
 
     alert('Karyawan Berhasil Ditambahkan!');
     setName(''); setEmail(''); setPhone(''); setAttendanceType('SINGLE'); setOfficeHourStart('08:00');
+    setIsAddModalOpen(false);
     fetchEmployees();
   };
 
@@ -100,6 +103,7 @@ export default function AdminEmployees() {
 
     alert('Bulk Import Sukses!');
     setCsvFile(null);
+    setIsImportModalOpen(false);
     fetchEmployees();
   };
 
@@ -143,90 +147,21 @@ export default function AdminEmployees() {
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
       <h1 style={{ color: 'var(--primary)', marginBottom: '2rem' }}>Manajemen Karyawan</h1>
 
-      <div className="responsive-grid-1-1" style={{ marginBottom: 'var(--sp-4)' }}>
-        {/* Card 1: Tambah Single */}
-        <Card style={{ display: 'flex', flexDirection: 'column' }}>
-          <h2 style={{ marginTop: 0 }}>Tambah Karyawan (Single)</h2>
-          <form onSubmit={handleAddEmployee} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-            <Input 
-              label="Email"
-              type="email" 
-              value={email} 
-              onChange={e => setEmail(e.target.value)} 
-              required 
-            />
-            <Input 
-              label="Nama Lengkap"
-              type="text"
-              pattern="^[a-zA-Z ]*$" 
-              title="Nama lengkap hanya boleh terdiri dari huruf dan spasi."
-              value={name} 
-              onChange={e => setName(e.target.value.replace(/[^a-zA-Z ]/g, ''))} 
-              required 
-              minLength={3}
-            />
-            <Input 
-              label="Nomor HP"
-              type="text" 
-              value={phone} 
-              onChange={e => setPhone(e.target.value.replace(/[^0-9]/g, ''))} 
-              pattern="^[0-9]{10,15}$"
-              title="Nomor HP harus berupa angka dengan panjang 10 hingga 15 karakter."
-            />
-            <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginBottom: '1rem' }}>
-              <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--sage)', marginBottom: '6px' }}>Tipe Absensi</label>
-              <select 
-                value={attendanceType} 
-                onChange={e => setAttendanceType(e.target.value)}
-                style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', backgroundColor: 'var(--surface-sunken)', width: '100%', fontSize: '15px' }}
-              >
-                <option value="SINGLE">Single-Shift (1x per Hari)</option>
-                <option value="MULTI">Multi-Shift (Lebih dari 1x)</option>
-              </select>
-            </div>
-            <Input 
-              label="Jam Masuk (Format HH:MM, misal 08:00)"
-              type="time" 
-              value={officeHourStart} 
-              onChange={e => setOfficeHourStart(e.target.value)} 
-              required 
-            />
-            <Button type="submit" variant="primary" style={{ marginTop: 'auto' }}>Simpan Karyawan</Button>
-          </form>
-        </Card>
 
-        {/* Card 2: Bulk Upload */}
-        <Card style={{ display: 'flex', flexDirection: 'column' }}>
-          <h2 style={{ marginTop: 0 }}>Bulk Upload (CSV)</h2>
-          <p className="text-secondary" style={{ marginBottom: '1.5rem' }}>Unggah file CSV untuk mengimpor banyak karyawan sekaligus secara instan.</p>
-          <div style={{ background: 'var(--surface-sunken)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', wordBreak: 'break-all' }}>
-            <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--sage)' }}>Format Header CSV:</span><br/>
-            <code style={{ fontSize: '13px', color: 'var(--stone)' }}>email,name,attendanceType,officeHourStart</code>
-          </div>
-          <form onSubmit={handleBulkUpload} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-            <Input 
-              label="Pilih File CSV"
-              type="file" 
-              accept=".csv" 
-              onChange={e => setCsvFile(e.target.files?.[0] || null)} 
-              required 
-            />
-            <Button variant="primary" type="submit" style={{ marginTop: 'auto' }}>Import CSV Sekarang</Button>
-          </form>
-        </Card>
-      </div>
 
       {/* Card Tabel Karyawan di bawah */}
       <Card>
         <div className="flex justify-between items-center gap-3" style={{ borderBottom: '1px solid var(--border-default)', paddingBottom: 'var(--sp-2)', marginBottom: 'var(--sp-2)', flexWrap: 'wrap' }}>
           <h2 style={{ borderBottom: 'none', paddingBottom: 0, margin: 0 }}>Daftar Karyawan Terdaftar</h2>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', width: '100%', maxWidth: '300px' }}>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <Button onClick={() => setIsAddModalOpen(true)} variant="primary">+ Add Employee</Button>
+            <Button onClick={() => setIsImportModalOpen(true)} variant="secondary">Import Data</Button>
             <Input 
               type="text" 
               placeholder="Cari Nama / Email..." 
               value={searchQuery}
               onChange={handleSearchChange}
-              containerStyle={{ marginBottom: 0 }}
+              containerStyle={{ marginBottom: 0, width: '250px' }}
             />
           </div>
         </div>
@@ -331,6 +266,91 @@ export default function AdminEmployees() {
               <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
                 <Button type="button" variant="ghost" onClick={() => setEditingEmployee(null)}>Batal</Button>
                 <Button type="submit" variant="primary">Simpan Perubahan</Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {/* Add Employee Modal */}
+      {isAddModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsAddModalOpen(false)}>
+          <Card elevated onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '500px', margin: 'var(--sp-4)' }}>
+            <h2 style={{ marginTop: 0 }}>Tambah Karyawan Baru</h2>
+            <form onSubmit={handleAddEmployee} style={{ display: 'flex', flexDirection: 'column' }}>
+              <Input 
+                label="Email"
+                type="email" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+                required 
+              />
+              <Input 
+                label="Nama Lengkap"
+                type="text"
+                pattern="^[a-zA-Z ]*$" 
+                title="Nama lengkap hanya boleh terdiri dari huruf dan spasi."
+                value={name} 
+                onChange={e => setName(e.target.value.replace(/[^a-zA-Z ]/g, ''))} 
+                required 
+                minLength={3}
+              />
+              <Input 
+                label="Nomor HP"
+                type="text" 
+                value={phone} 
+                onChange={e => setPhone(e.target.value.replace(/[^0-9]/g, ''))} 
+                pattern="^[0-9]{10,15}$"
+                title="Nomor HP harus berupa angka dengan panjang 10 hingga 15 karakter."
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginBottom: '1rem' }}>
+                <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--sage)', marginBottom: '6px' }}>Tipe Absensi</label>
+                <select 
+                  value={attendanceType} 
+                  onChange={e => setAttendanceType(e.target.value)}
+                  style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', backgroundColor: 'var(--surface-sunken)', width: '100%', fontSize: '15px' }}
+                >
+                  <option value="SINGLE">Single-Shift (1x per Hari)</option>
+                  <option value="MULTI">Multi-Shift (Lebih dari 1x)</option>
+                </select>
+              </div>
+              <Input 
+                label="Jam Masuk (Format HH:MM, misal 08:00)"
+                type="time" 
+                value={officeHourStart} 
+                onChange={e => setOfficeHourStart(e.target.value)} 
+                required 
+              />
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+                <Button type="button" variant="ghost" onClick={() => setIsAddModalOpen(false)}>Batal</Button>
+                <Button type="submit" variant="primary">Simpan Karyawan</Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {/* Import CSV Modal */}
+      {isImportModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsImportModalOpen(false)}>
+          <Card elevated onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '500px', margin: 'var(--sp-4)' }}>
+            <h2 style={{ marginTop: 0 }}>Import Data (CSV)</h2>
+            <p className="text-secondary" style={{ marginBottom: '1.5rem' }}>Unggah file CSV untuk mengimpor banyak karyawan sekaligus secara instan.</p>
+            <div style={{ background: 'var(--surface-sunken)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', wordBreak: 'break-all' }}>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--sage)' }}>Format Header CSV:</span><br/>
+              <code style={{ fontSize: '13px', color: 'var(--stone)' }}>email,name,attendanceType,officeHourStart</code>
+            </div>
+            <form onSubmit={handleBulkUpload} style={{ display: 'flex', flexDirection: 'column' }}>
+              <Input 
+                label="Pilih File CSV"
+                type="file" 
+                accept=".csv" 
+                onChange={e => setCsvFile(e.target.files?.[0] || null)} 
+                required 
+              />
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+                <Button type="button" variant="ghost" onClick={() => setIsImportModalOpen(false)}>Batal</Button>
+                <Button variant="primary" type="submit">Import CSV Sekarang</Button>
               </div>
             </form>
           </Card>
