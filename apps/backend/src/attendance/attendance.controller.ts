@@ -1,4 +1,4 @@
-import { Controller, Post, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Get, UseGuards, Req, Body } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PrismaService } from '../prisma/prisma.service';
@@ -12,13 +12,13 @@ export class AttendanceController {
   ) {}
 
   @Post('clock-in')
-  async clockIn(@Req() req: any) {
-    return this.attendanceService.clockIn(req.user.userId);
+  async clockIn(@Req() req: any, @Body('location') location?: string) {
+    return this.attendanceService.clockIn(req.user.userId, location);
   }
 
   @Post('clock-out')
-  async clockOut(@Req() req: any) {
-    return this.attendanceService.clockOut(req.user.userId);
+  async clockOut(@Req() req: any, @Body('location') location?: string) {
+    return this.attendanceService.clockOut(req.user.userId, location);
   }
 
   @Get('history')

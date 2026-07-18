@@ -58,6 +58,7 @@ export function EmployeeHistoryTable({
               <th>Tanggal</th>
               <th>Clock In</th>
               <th>Clock Out</th>
+              <th>Lokasi (In)</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -67,6 +68,13 @@ export function EmployeeHistoryTable({
                 <td><strong>{new Date(att.date).toLocaleDateString()}</strong></td>
                 <td>{att.clockIn ? new Date(att.clockIn).toLocaleTimeString() : '-'}</td>
                 <td>{att.clockOut ? new Date(att.clockOut).toLocaleTimeString() : '-'}</td>
+                <td>
+                  {att.clockInLocation ? (
+                    <a href={`https://maps.google.com/?q=${att.clockInLocation}`} target="_blank" rel="noreferrer" style={{ color: 'var(--blue)', textDecoration: 'none' }}>
+                      📍 Lihat Peta
+                    </a>
+                  ) : '-'}
+                </td>
                 <td>
                   {att.clockOut ? (
                       <Chip type="status" status="present">Selesai</Chip>
@@ -78,7 +86,7 @@ export function EmployeeHistoryTable({
             ))}
             {history.length === 0 && (
               <tr>
-                <td colSpan={4} style={{ textAlign: 'center', padding: 'var(--sp-4)', color: 'var(--sage)' }}>Tidak ada data riwayat absensi.</td>
+                <td colSpan={5} style={{ textAlign: 'center', padding: 'var(--sp-4)', color: 'var(--sage)' }}>Tidak ada data riwayat absensi.</td>
               </tr>
             )}
           </tbody>

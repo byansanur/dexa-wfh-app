@@ -13,7 +13,7 @@ export class AttendanceService {
     private readonly notificationGateway: NotificationGateway,
   ) {}
 
-  async clockIn(userId: string) {
+  async clockIn(userId: string, location?: string) {
     const today = getTodayWIB();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -47,6 +47,7 @@ export class AttendanceService {
         userId,
         date: today,
         clockIn: new Date(),
+        clockInLocation: location,
       },
       include: {
         user: true,
@@ -69,7 +70,7 @@ export class AttendanceService {
     return attendance;
   }
 
-  async clockOut(userId: string) {
+  async clockOut(userId: string, location?: string) {
     // Cari sesi absensi aktif (belum clock out)
     const activeSession = await this.prisma.attendance.findFirst({
       where: {
@@ -87,6 +88,7 @@ export class AttendanceService {
       where: { id: activeSession.id },
       data: {
         clockOut: new Date(),
+        clockOutLocation: location,
       },
       include: {
         user: true,

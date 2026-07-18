@@ -119,6 +119,7 @@ export class AdminService {
         officeHourStart: emp.officeHourStart,
         clockIn: latestAttendance?.clockIn || null,
         clockOut: latestAttendance?.clockOut || null,
+        clockInLocation: latestAttendance?.clockInLocation || null,
       };
     });
     
@@ -165,6 +166,7 @@ export class AdminService {
       date: att.date,
       clockIn: att.clockIn,
       clockOut: att.clockOut,
+      clockInLocation: att.clockInLocation,
       name: att.user.name,
       email: att.user.email,
       attendanceType: att.user.attendanceType,

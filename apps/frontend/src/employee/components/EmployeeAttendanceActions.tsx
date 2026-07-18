@@ -3,10 +3,30 @@ import { Button } from '../../components/ui/Button';
 
 interface EmployeeAttendanceActionsProps {
   currentTime: Date;
-  onAttendance: (type: 'clock-in' | 'clock-out') => void;
+  onAttendance: (type: 'clock-in' | 'clock-out', location?: string) => void;
 }
 
 export function EmployeeAttendanceActions({ currentTime, onAttendance }: EmployeeAttendanceActionsProps) {
+  const handleLocationAndAttend = (type: 'clock-in' | 'clock-out') => {
+    if (!navigator.geolocation) {
+      alert('Browser Anda tidak mendukung fitur lokasi (GPS).');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const locationString = `${latitude},${longitude}`;
+        onAttendance(type, locationString);
+      },
+      (error) => {
+        alert('Anda harus mengizinkan akses lokasi untuk melakukan absensi.');
+        console.error('Geolocation Error:', error);
+      },
+      { enableHighAccuracy: true }
+    );
+  };
+
   return (
     <Card>
       <h3 style={{ marginBottom: 'var(--sp-4)' }}>Absensi Hari Ini</h3>
@@ -15,7 +35,7 @@ export function EmployeeAttendanceActions({ currentTime, onAttendance }: Employe
           variant="success"
           size="lg"
           style={{ flex: 1, border: 'none' }} 
-          onClick={() => onAttendance('clock-in')}
+          onClick={() => handleLocationAndAttend('clock-in')}
         >
           Clock In
         </Button>
@@ -23,7 +43,7 @@ export function EmployeeAttendanceActions({ currentTime, onAttendance }: Employe
           variant="destructive"
           size="lg"
           style={{ flex: 1 }} 
-          onClick={() => onAttendance('clock-out')}
+          onClick={() => handleLocationAndAttend('clock-out')}
         >
           Clock Out
         </Button>

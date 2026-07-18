@@ -170,6 +170,7 @@ export default function AdminDashboard() {
                 <th>Tipe Absen</th>
                 <th>Jam Masuk (Sesi Terakhir)</th>
                 <th>Jam Keluar (Sesi Terakhir)</th>
+                <th>Lokasi (In)</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -186,6 +187,13 @@ export default function AdminDashboard() {
                   <td>{emp.clockIn ? new Date(emp.clockIn).toLocaleTimeString() : '-'}</td>
                   <td>{emp.clockOut ? new Date(emp.clockOut).toLocaleTimeString() : '-'}</td>
                   <td>
+                    {emp.clockInLocation ? (
+                      <a href={`https://maps.google.com/?q=${emp.clockInLocation}`} target="_blank" rel="noreferrer" style={{ color: 'var(--blue)', textDecoration: 'none' }}>
+                        📍 Peta
+                      </a>
+                    ) : '-'}
+                  </td>
+                  <td>
                     <Chip 
                       type="status" 
                       status={!emp.clockIn ? 'absent' : emp.clockOut ? 'completed' : 'present'}
@@ -197,7 +205,7 @@ export default function AdminDashboard() {
               ))}
               {employees.length === 0 && (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>Data tidak ditemukan.</td>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>Data tidak ditemukan.</td>
                 </tr>
               )}
             </tbody>

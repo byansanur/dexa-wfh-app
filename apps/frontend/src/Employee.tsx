@@ -138,12 +138,12 @@ export default function Employee() {
     }
   };
 
-  const handleAttendance = async (type: 'clock-in' | 'clock-out') => {
+  const handleAttendance = async (type: 'clock-in' | 'clock-out', location?: string) => {
     try {
       const res = await apiFetch(`/attendance/${type}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ location }),
       });
       if (!res.ok) {
         const errorData = await res.json();
