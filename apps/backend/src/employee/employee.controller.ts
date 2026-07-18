@@ -1,7 +1,8 @@
 import { Controller, Put, Body, UseInterceptors, UploadedFile, UseGuards, Req, Get, Query } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { EmployeeService } from './employee.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';import { UpdateProfileDto } from './dto/update-profile.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('employee')
 @UseGuards(JwtAuthGuard)
