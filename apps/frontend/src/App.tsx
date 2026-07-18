@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import Login from './Login';
 import Employee from './Employee';
 import Admin from './Admin';
+import NotFound from './pages/NotFound';
 import './index.css';
 
 export default function App() {
@@ -23,7 +24,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/employee/*" element={<Employee />} />
         <Route path="/admin/*" element={<Admin />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

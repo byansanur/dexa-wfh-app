@@ -5,6 +5,7 @@ import AdminDashboard from './admin/AdminDashboard';
 import AdminEmployees from './admin/AdminEmployees';
 import AdminReports from './admin/AdminReports';
 import AdminLogs from './admin/AdminLogs';
+import NotFound from './pages/NotFound';
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ export default function Admin() {
         <Route path="employees" element={<AdminEmployees />} />
         <Route path="reports" element={<AdminReports />} />
         <Route path="logs" element={<AdminLogs />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
