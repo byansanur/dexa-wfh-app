@@ -158,6 +158,8 @@ export default function Employee() {
     }
   };
 
+  if (!user || user.role !== 'EMPLOYEE') return null;
+
   return (
     <div className="container">
       <Header userName={user.name} />
