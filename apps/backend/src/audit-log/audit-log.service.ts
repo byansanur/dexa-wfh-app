@@ -13,25 +13,17 @@ export class AuditLogService {
     private readonly storageService: StorageService
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron('0 0,6,12,18 * * *')
   async exportLogsToMinio() {
-    this.logger.log('Running daily log export to MinIO...');
+    this.logger.log('Running batch log export to MinIO...');
     const collection = this.connection.collection('audit_logs');
-    
-    // Get logs from the previous day
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    yesterday.setHours(0, 0, 0, 0);
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
     const logs = await collection.find({
-      _receivedAt: { $gte: yesterday, $lt: today }
+      $or: [{ _exported: false }, { _exported: { $exists: false } }]
     }).toArray();
 
     if (logs.length === 0) {
-      this.logger.log('No logs found for yesterday. Skipping export.');
+      this.logger.log('No pending logs to export. Skipping.');
       return;
     }
 
@@ -42,7 +34,15 @@ export class AuditLogService {
     
     try {
       const url = await this.storageService.uploadBuffer(buffer, fileName, 'text/plain');
-      this.logger.log(`Successfully exported ${logs.length} logs to ${url}`);
+      
+      // Update the exported status
+      const logIds = logs.map(l => l._id);
+      await collection.updateMany(
+        { _id: { $in: logIds } },
+        { $set: { _exported: true } }
+      );
+      
+      this.logger.log(`Successfully exported ${logs.length} logs to ${url} and marked as exported.`);
     } catch (e) {
       this.logger.error('Failed to export logs to MinIO', e);
     }
@@ -97,6 +97,7 @@ export class AuditLogService {
     await collection.insertOne({
       ...payload,
       _receivedAt: new Date(),
+      _exported: false,
     });
   }
 

@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import * as Minio from 'minio';
 import { extname } from 'path';
+import sharp from 'sharp';
 
 @Injectable()
 export class StorageService implements OnModuleInit {
@@ -47,14 +48,29 @@ export class StorageService implements OnModuleInit {
   }
 
   async uploadFile(file: Express.Multer.File): Promise<string> {
-    const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
+    let finalBuffer = file.buffer;
+    let finalMimetype = file.mimetype;
+    let finalExt = extname(file.originalname);
+    let baseFileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+
+    if (file.mimetype.startsWith('image/')) {
+      try {
+        finalBuffer = await sharp(file.buffer).webp({ quality: 80 }).toBuffer();
+        finalMimetype = 'image/webp';
+        finalExt = '.webp';
+      } catch (error) {
+        this.logger.error('Failed to process image with sharp, falling back to original', error);
+      }
+    }
+
+    const fileName = `${baseFileName}${finalExt}`;
     
     await this.minioClient.putObject(
       this.bucketName,
       fileName,
-      file.buffer,
-      file.size,
-      { 'Content-Type': file.mimetype }
+      finalBuffer,
+      finalBuffer.length,
+      { 'Content-Type': finalMimetype }
     );
 
     // Return the public URL
