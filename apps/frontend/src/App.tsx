@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import Login from './Login';
-import Employee from './Employee';
-import Admin from './Admin';
+import Employee from './pages/Employee';
+import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
 import './index.css';
 

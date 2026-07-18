@@ -1,11 +1,11 @@
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import AdminLayout from './admin/AdminLayout';
-import AdminDashboard from './admin/AdminDashboard';
-import AdminEmployees from './admin/AdminEmployees';
-import AdminReports from './admin/AdminReports';
-import AdminLogs from './admin/AdminLogs';
-import NotFound from './pages/NotFound';
+import AdminLayout from '../admin/AdminLayout';
+import AdminDashboard from '../admin/AdminDashboard';
+import AdminEmployees from '../admin/AdminEmployees';
+import AdminReports from '../admin/AdminReports';
+import AdminLogs from '../admin/AdminLogs';
+import NotFound from './NotFound';
 
 export default function Admin() {
   const navigate = useNavigate();

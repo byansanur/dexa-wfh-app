@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { apiFetch } from './utils/api';
+import { apiFetch } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
-import { Header } from './components/ui/Header';
-import { socket } from './utils/socket';
-import { EmployeeProfileCard } from './employee/components/EmployeeProfileCard';
-import { EmployeeAttendanceActions } from './employee/components/EmployeeAttendanceActions';
-import { EmployeeHistoryTable } from './employee/components/EmployeeHistoryTable';
-import { EmployeeEditProfileModal } from './employee/components/EmployeeEditProfileModal';
+import { Header } from '../components/ui/Header';
+import { socket } from '../utils/socket';
+import { EmployeeProfileCard } from '../employee/components/EmployeeProfileCard';
+import { EmployeeAttendanceActions } from '../employee/components/EmployeeAttendanceActions';
+import { EmployeeHistoryTable } from '../employee/components/EmployeeHistoryTable';
+import { EmployeeEditProfileModal } from '../employee/components/EmployeeEditProfileModal';
 
 export default function Employee() {
   const navigate = useNavigate();
