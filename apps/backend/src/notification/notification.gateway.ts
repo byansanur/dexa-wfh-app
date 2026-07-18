@@ -1,7 +1,12 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ 
+  cors: {
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173'],
+    credentials: true
+  } 
+})
 export class NotificationGateway {
   @WebSocketServer()
   server: Server;

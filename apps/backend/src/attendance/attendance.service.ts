@@ -1,4 +1,4 @@
-import { Injectable, Inject, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { getTodayWIB } from '../common/utils/date.util';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,6 +7,8 @@ import { NotificationGateway } from '../notification/notification.gateway';
 
 @Injectable()
 export class AttendanceService {
+  private readonly logger = new Logger(AttendanceService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     @Inject('RABBITMQ_SERVICE') private readonly amqpClient: ClientProxy,
@@ -64,7 +66,7 @@ export class AttendanceService {
       timestamp: new Date(),
       data: attendance,
     }).subscribe({
-      error: (err) => console.error('RabbitMQ Emit Error:', err)
+      error: (err) => this.logger.error('RabbitMQ Emit Error:', err)
     });
 
     return attendance;
@@ -105,7 +107,7 @@ export class AttendanceService {
       timestamp: new Date(),
       data: attendance,
     }).subscribe({
-      error: (err) => console.error('RabbitMQ Emit Error:', err)
+      error: (err) => this.logger.error('RabbitMQ Emit Error:', err)
     });
 
     return attendance;
@@ -132,7 +134,7 @@ export class AttendanceService {
         // Notify Admin via WebSocket to refresh Dashboard
         this.notificationGateway.server.emit('AttendanceLogged', { autoClockOut: true });
         
-        console.log(`Auto Clock-Out performed for ${activeSessions.length} employees.`);
+        this.logger.log(`Auto Clock-Out performed for ${activeSessions.length} employees.`);
       }
     });
   }

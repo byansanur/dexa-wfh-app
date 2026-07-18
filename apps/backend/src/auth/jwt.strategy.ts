@@ -5,6 +5,11 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
+    const secret = process.env.JWT_SECRET;
+    if (process.env.NODE_ENV === 'production' && !secret) {
+      throw new Error('JWT_SECRET environment variable is missing in production');
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req) => {
@@ -12,7 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         },
       ]),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'super-secret-key-for-skill-test',
+      secretOrKey: secret || 'super-secret-key-for-skill-test',
     });
   }
 

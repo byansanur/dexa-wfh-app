@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { NotificationGateway } from '../notification/notification.gateway';
@@ -9,6 +9,8 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class EmployeeService {
+  private readonly logger = new Logger(EmployeeService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     @Inject('RABBITMQ_SERVICE') private readonly amqpClient: ClientProxy,
@@ -60,7 +62,7 @@ export class EmployeeService {
           changes,
           timestamp: new Date().toISOString(),
         }).subscribe({
-          error: (err) => console.error('RabbitMQ Emit Error:', err)
+          error: (err) => this.logger.error('RabbitMQ Emit Error:', err)
         });
       }
 
