@@ -128,12 +128,19 @@ dexa-wfh-app/
 │   │   └── Dockerfile           # Multi-stage production Dockerfile
 │   └── frontend/                # React.js SPA (Vite + ZenGrid Design System)
 │       ├── src/
-│       │   ├── admin/           # Admin Dashboard, Employees, Reports, Logs
-│       │   ├── components/ui/   # Design System Components
-│       │   └── utils/           # API Client, Socket, Formatters
-│       ├── nginx.conf           # Production Nginx reverse proxy config
+│       │   ├── admin/           # Subkomponen & View khusus Admin (Dashboard, Reports, Logs)
+│       │   ├── employee/        # Subkomponen & View khusus Employee (History, Actions)
+│       │   ├── components/
+│       │   │   ├── ui/          # ZenGrid UI Core (Button, Input, Card, dll)
+│       │   │   └── ErrorBoundary.tsx # Peningkat Keandalan (Catch React Crashes)
+│       │   ├── pages/           # Halaman Utama (Admin, Employee, NotFound)
+│       │   ├── utils/           # Utility Pendukung (API Client, Socket, Formatters)
+│       │   ├── App.tsx          # Routing Utama & Root Redirector
+│       │   ├── Login.tsx        # Halaman Otentikasi Masuk
+│       │   └── main.tsx         # Entry Point Aplikasi (Bungkus ErrorBoundary)
+│       ├── nginx.conf           # Konfigurasi Reverse Proxy Nginx (Produksi)
 │       └── Dockerfile           # Multi-stage production Dockerfile
-├── docker-compose.yml           # Infrastructure (PostgreSQL, MongoDB, RabbitMQ, MinIO)
+├── docker-compose.yml           # Orkestrasi Infrastruktur (PostgreSQL, MongoDB, RabbitMQ, MinIO)
 ├── sample_employees.csv         # Contoh data karyawan untuk bulk upload
-└── pnpm-workspace.yaml          # Monorepo workspace configuration
+└── pnpm-workspace.yaml          # Konfigurasi monorepo pnpm workspace
 ```
