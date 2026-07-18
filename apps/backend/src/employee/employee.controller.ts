@@ -9,7 +9,9 @@ export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) {}
 
   @Put('profile')
-  @UseInterceptors(FileInterceptor('photo'))
+  @UseInterceptors(FileInterceptor('photo', {
+    limits: { fileSize: 2 * 1024 * 1024 } // 2MB limit
+  }))
   async updateProfile(
     @Req() req: any,
     @Body() body: any,

@@ -50,7 +50,9 @@ export class AdminController {
   }
 
   @Post('employee/bulk')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  }))
   async uploadBulkEmployees(@UploadedFile() file: Express.Multer.File) {
     return this.adminService.uploadBulkEmployees(file);
   }

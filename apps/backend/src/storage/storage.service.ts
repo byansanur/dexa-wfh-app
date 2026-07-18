@@ -25,7 +25,7 @@ export class StorageService implements OnModuleInit {
       if (!exists) {
         await this.minioClient.makeBucket(this.bucketName, 'us-east-1');
         
-        // Set bucket policy to public read
+        // Set bucket policy to public read only for image extensions
         const policy = {
           Version: '2012-10-17',
           Statement: [
@@ -33,7 +33,12 @@ export class StorageService implements OnModuleInit {
               Effect: 'Allow',
               Principal: { AWS: ['*'] },
               Action: ['s3:GetObject'],
-              Resource: [`arn:aws:s3:::${this.bucketName}/*`],
+              Resource: [
+                `arn:aws:s3:::${this.bucketName}/*.webp`,
+                `arn:aws:s3:::${this.bucketName}/*.png`,
+                `arn:aws:s3:::${this.bucketName}/*.jpg`,
+                `arn:aws:s3:::${this.bucketName}/*.jpeg`
+              ],
             },
           ],
         };

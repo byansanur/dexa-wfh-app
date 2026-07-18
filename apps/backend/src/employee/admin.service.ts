@@ -194,7 +194,8 @@ export class AdminService {
         }
       });
       this.notificationGateway.notifyProfileUpdated({ name: `Admin (via Dashboard)` });
-      return newEmployee;
+      const { password, ...safeUser } = newEmployee;
+      return safeUser;
     } catch (error: any) {
       if (error.code === 'P2002') {
         throw new BadRequestException('Email sudah terdaftar di sistem. Gunakan email lain.');
@@ -217,7 +218,8 @@ export class AdminService {
         }
       });
       this.notificationGateway.notifyProfileUpdated(updatedUser);
-      return updatedUser;
+      const { password, ...safeUser } = updatedUser;
+      return safeUser;
     } catch (error: any) {
       if (error.code === 'P2002') {
         throw new BadRequestException('Email sudah terdaftar di sistem. Gunakan email lain.');

@@ -11,6 +11,9 @@ export class AuthService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
+    if (process.env.NODE_ENV === 'production') {
+      return;
+    }
     // Seed Admin
     const adminExists = await this.prisma.user.findUnique({ where: { email: 'admin@dexa.com' } });
     if (!adminExists) {
