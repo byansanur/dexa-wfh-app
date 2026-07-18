@@ -30,8 +30,8 @@ export default function Admin() {
         <Route path="employees" element={<AdminEmployees />} />
         <Route path="reports" element={<AdminReports />} />
         <Route path="logs" element={<AdminLogs />} />
-        <Route path="*" element={<NotFound />} />
       </Route>
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
