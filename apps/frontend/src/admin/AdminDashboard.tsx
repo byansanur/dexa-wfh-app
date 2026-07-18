@@ -152,10 +152,10 @@ export default function AdminDashboard() {
               onChange={handleStatusChange}
               style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', backgroundColor: 'var(--surface-sunken)', flex: '1 1 150px', maxWidth: '200px', fontSize: '15px' }}
             >
-              <option value="ALL_ATTENDED">Semua Hadir (Hari Ini)</option>
-              <option value="PRESENT">Sedang Bekerja (Aktif)</option>
+              <option value="ALL_ATTENDED">Hadir (Hari Ini)</option>
+              <option value="PRESENT">Bekerja (Aktif)</option>
               <option value="COMPLETED">Selesai (Pulang)</option>
-              <option value="ALL">Semua Karyawan (+ Belum Hadir)</option>
+              <option value="ALL">Semua Karyawan</option>
             </select>
           </div>
         </div>
