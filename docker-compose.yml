@@ -5,6 +5,7 @@ services:
   postgres-db:
     image: postgres:15-alpine
     container_name: dexa_postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: secretpassword
@@ -13,28 +14,46 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d dexa_wfh"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # 2. Database Log (Audit Trail Terpisah)
   mongo-db:
     image: mongo:6.0
     container_name: dexa_mongo
+    restart: unless-stopped
     ports:
       - "27017:27017"
     volumes:
       - mongodata:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # 3. Message Queue (Event-Driven)
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: dexa_rabbitmq
+    restart: unless-stopped
     ports:
       - "5672:5672"   # Port utama untuk komunikasi NestJS
       - "15672:15672" # Port UI Management (Bisa diakses via browser)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # 4. Object Storage (S3-Compatible)
   minio:
     image: minio/minio:latest
     container_name: dexa_minio
+    restart: unless-stopped
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -44,6 +63,11 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - miniodata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pgdata:
