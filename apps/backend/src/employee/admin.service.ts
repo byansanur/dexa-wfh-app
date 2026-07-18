@@ -7,6 +7,7 @@ import { Readable } from 'stream';
 import { getPaginationMeta } from '../common/utils/pagination.util';
 import { getTodayWIB } from '../common/utils/date.util';
 import { NotificationGateway } from '../notification/notification.gateway';
+import csvParser from 'csv-parser';
 
 @Injectable()
 export class AdminService {
@@ -230,7 +231,6 @@ export class AdminService {
 
   async uploadBulkEmployees(file: Express.Multer.File) {
     const results: any[] = [];
-    const csvParser = require('csv-parser');
     
     return new Promise((resolve, reject) => {
       Readable.from(file.buffer)

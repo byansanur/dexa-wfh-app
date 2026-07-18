@@ -38,5 +38,7 @@ model Attendance {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, date])
+  @@index([date])
   @@map("attendances")
 }

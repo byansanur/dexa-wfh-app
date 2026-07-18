@@ -113,25 +113,27 @@ export class AttendanceService {
 
   @Cron('59 59 23 * * *', { timeZone: 'Asia/Jakarta' })
   async autoClockOutOvertime() {
-    const activeSessions = await this.prisma.attendance.findMany({
-      where: { clockOut: null }
-    });
-
-    if (activeSessions.length > 0) {
-      const now = new Date();
-      await this.prisma.attendance.updateMany({
-        where: { clockOut: null },
-        data: { clockOut: now }
+    const now = new Date();
+    await this.prisma.$transaction(async (tx) => {
+      const activeSessions = await tx.attendance.findMany({
+        where: { clockOut: null }
       });
 
-      for (const session of activeSessions) {
-        this.notificationGateway.notifyAutoClockOut(session.userId);
+      if (activeSessions.length > 0) {
+        await tx.attendance.updateMany({
+          where: { clockOut: null },
+          data: { clockOut: now }
+        });
+
+        for (const session of activeSessions) {
+          this.notificationGateway.notifyAutoClockOut(session.userId);
+        }
+        
+        // Notify Admin via WebSocket to refresh Dashboard
+        this.notificationGateway.server.emit('AttendanceLogged', { autoClockOut: true });
+        
+        console.log(`Auto Clock-Out performed for ${activeSessions.length} employees.`);
       }
-      
-      // Notify Admin via WebSocket to refresh Dashboard
-      this.notificationGateway.server.emit('AttendanceLogged', { autoClockOut: true });
-      
-      console.log(`Auto Clock-Out performed for ${activeSessions.length} employees.`);
-    }
+    });
   }
 }
