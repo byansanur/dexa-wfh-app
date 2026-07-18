@@ -14,6 +14,7 @@ export default function AdminEmployees() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [attendanceType, setAttendanceType] = useState('SINGLE');
+  const [officeHourStart, setOfficeHourStart] = useState('08:00');
   const [csvFile, setCsvFile] = useState<File | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,7 +68,7 @@ export default function AdminEmployees() {
     e.preventDefault();
     const res = await apiFetch('/admin/employee', {
       method: 'POST',
-      body: JSON.stringify({ email, name, phone, attendanceType })
+      body: JSON.stringify({ email, name, phone, attendanceType, officeHourStart })
     });
     
     if (!res.ok) {
@@ -77,7 +78,7 @@ export default function AdminEmployees() {
     }
 
     alert('Karyawan Berhasil Ditambahkan!');
-    setName(''); setEmail(''); setPhone(''); setAttendanceType('SINGLE');
+    setName(''); setEmail(''); setPhone(''); setAttendanceType('SINGLE'); setOfficeHourStart('08:00');
     fetchEmployees();
   };
 
@@ -122,6 +123,7 @@ export default function AdminEmployees() {
         email: editingEmployee.email,
         phone: editingEmployee.phone,
         attendanceType: editingEmployee.attendanceType,
+        officeHourStart: editingEmployee.officeHourStart,
         role: 'EMPLOYEE'
       })
     });
@@ -182,6 +184,13 @@ export default function AdminEmployees() {
                 <option value="MULTI">Multi-Shift (Lebih dari 1x)</option>
               </select>
             </div>
+            <Input 
+              label="Jam Masuk (Format HH:MM, misal 08:00)"
+              type="time" 
+              value={officeHourStart} 
+              onChange={e => setOfficeHourStart(e.target.value)} 
+              required 
+            />
             <Button type="submit" variant="primary" style={{ marginTop: 'auto' }}>Simpan Karyawan</Button>
           </form>
         </Card>
@@ -192,7 +201,7 @@ export default function AdminEmployees() {
           <p className="text-secondary" style={{ marginBottom: '1.5rem' }}>Unggah file CSV untuk mengimpor banyak karyawan sekaligus secara instan.</p>
           <div style={{ background: 'var(--surface-sunken)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', wordBreak: 'break-all' }}>
             <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--sage)' }}>Format Header CSV:</span><br/>
-            <code style={{ fontSize: '13px', color: 'var(--stone)' }}>email,name,attendanceType</code>
+            <code style={{ fontSize: '13px', color: 'var(--stone)' }}>email,name,attendanceType,officeHourStart</code>
           </div>
           <form onSubmit={handleBulkUpload} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
             <Input 
@@ -230,6 +239,7 @@ export default function AdminEmployees() {
                 <th>Email</th>
                 <th>No. HP</th>
                 <th>Tipe Absen</th>
+                <th>Jam Masuk</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -243,6 +253,7 @@ export default function AdminEmployees() {
                   <td>{emp.email}</td>
                   <td>{emp.phone || '-'}</td>
                   <td>{emp.attendanceType === 'MULTI' ? 'Multi-Shift' : 'Single-Shift'}</td>
+                  <td>{emp.officeHourStart || '08:00'}</td>
                   <td>
                     <Button 
                       variant="secondary" 
@@ -309,6 +320,13 @@ export default function AdminEmployees() {
                   <option value="MULTI">Multi-Shift (Lebih dari 1x)</option>
                 </select>
               </div>
+              <Input 
+                label="Jam Masuk (Format HH:MM, misal 08:00)"
+                type="time" 
+                value={editingEmployee.officeHourStart || '08:00'} 
+                onChange={e => setEditingEmployee({...editingEmployee, officeHourStart: e.target.value})} 
+                required 
+              />
               
               <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
                 <Button type="button" variant="ghost" onClick={() => setEditingEmployee(null)}>Batal</Button>

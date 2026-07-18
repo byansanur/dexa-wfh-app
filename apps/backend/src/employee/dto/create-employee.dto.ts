@@ -24,4 +24,8 @@ export class CreateEmployeeDto {
   @IsEnum(['SINGLE', 'MULTI'], { message: 'Tipe absensi harus SINGLE atau MULTI' })
   @IsOptional()
   attendanceType?: string;
+
+  @IsString()
+  @IsOptional()
+  officeHourStart?: string;
 }

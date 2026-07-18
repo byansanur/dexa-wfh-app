@@ -18,7 +18,7 @@ export class AdminService {
   async getDashboardStats() {
     const today = getTodayWIB();
 
-    const [totalEmployees, presentToday, topPunctual] = await Promise.all([
+    const [totalEmployees, presentToday, rawAttendances] = await Promise.all([
       this.prisma.user.count({ where: { role: 'EMPLOYEE' } }),
       this.prisma.user.count({ 
         where: { 
@@ -32,12 +32,25 @@ export class AdminService {
       }),
       this.prisma.attendance.findMany({
         where: { date: today },
-        orderBy: { clockIn: 'asc' },
         distinct: ['userId'],
-        take: 3,
-        include: { user: { select: { name: true, email: true, photoUrl: true } } }
+        include: { user: { select: { name: true, email: true, photoUrl: true, officeHourStart: true } } }
       })
     ]);
+
+    const evaluatedAttendances = rawAttendances.map(att => {
+      const [hh, mm] = (att.user.officeHourStart || '08:00').split(':');
+      const shiftDate = new Date(att.date);
+      shiftDate.setHours(parseInt(hh, 10), parseInt(mm, 10), 0, 0);
+
+      const clockInTime = att.clockIn ? new Date(att.clockIn).getTime() : new Date().getTime();
+      const diffMinutes = (clockInTime - shiftDate.getTime()) / (1000 * 60);
+
+      return { ...att, diffMinutes };
+    });
+
+    const validAttendances = evaluatedAttendances.filter(a => a.diffMinutes >= -60);
+    validAttendances.sort((a, b) => a.diffMinutes - b.diffMinutes);
+    const topPunctual = validAttendances.slice(0, 3);
 
     const absentToday = totalEmployees - presentToday;
 
@@ -103,6 +116,7 @@ export class AdminService {
         phone: emp.phone,
         photoUrl: emp.photoUrl,
         attendanceType: emp.attendanceType,
+        officeHourStart: emp.officeHourStart,
         clockIn: latestAttendance?.clockIn || null,
         clockOut: latestAttendance?.clockOut || null,
       };
@@ -174,6 +188,7 @@ export class AdminService {
           role: dto.role || 'EMPLOYEE',
           phone: dto.phone,
           attendanceType: dto.attendanceType,
+          officeHourStart: dto.officeHourStart || '08:00',
         }
       });
       this.notificationGateway.notifyProfileUpdated({ name: `Admin (via Dashboard)` });
@@ -196,6 +211,7 @@ export class AdminService {
           role: dto.role,
           phone: dto.phone,
           attendanceType: dto.attendanceType,
+          officeHourStart: dto.officeHourStart,
         }
       });
       this.notificationGateway.notifyProfileUpdated(updatedUser);
@@ -225,6 +241,7 @@ export class AdminService {
               password: defaultPassword,
               role: 'EMPLOYEE',
               attendanceType: row.attendanceType || 'SINGLE',
+              officeHourStart: row.officeHourStart || '08:00',
             }));
 
             await this.prisma.user.createMany({
